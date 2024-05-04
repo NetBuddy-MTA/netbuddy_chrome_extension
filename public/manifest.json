@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "NetBuddy Extension",
+
+  "icons": {
+    "48": "icons/netbuddylogo-48.png",
+    "96": "icons/netbuddylogo-96.png"
+  },
+
+  "action": {
+    "default_popup": "index.html"
+  },
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "permissions": [
+    "scripting",
+    "background",
+    "tabs"
+  ],
+
+  "host_permissions": [
+    "*://*/*"
+  ]
+}
