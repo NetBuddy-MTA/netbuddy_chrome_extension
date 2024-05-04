@@ -9,7 +9,7 @@ const entryPoints = {
   background: path.resolve(__dirname, 'src/background_service.ts'),
 
   // content scripts
-  xpath: path.resolve(__dirname, 'src/content_scripts/GetXPathForElement.ts'),
+  GetElementXPath: path.resolve(__dirname, 'src/content_scripts/GetXPathForElement.ts'),
 }
 
 // https://vitejs.dev/config/
