@@ -22,7 +22,8 @@
   "permissions": [
     "scripting",
     "background",
-    "tabs"
+    "tabs",
+    "clipboardWrite"
   ],
 
   "host_permissions": [

@@ -3,8 +3,13 @@ import react from '@vitejs/plugin-react'
 import path from 'path';
 
 const entryPoints = {
+  // main
   main: path.resolve(__dirname, 'index.html'),
-  background: path.resolve(__dirname, 'src/background_service.ts')
+  // background service
+  background: path.resolve(__dirname, 'src/background_service.ts'),
+
+  // content scripts
+  xpath: path.resolve(__dirname, 'src/content_scripts/GetXPathForElement.ts'),
 }
 
 // https://vitejs.dev/config/
