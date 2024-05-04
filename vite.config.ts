@@ -11,8 +11,13 @@ const entryPoints = {
 export default defineConfig({
   plugins: [react()],
   build: {
-    lib: {
-      entry: entryPoints
+    rollupOptions: {
+      input: entryPoints,
+      output: {
+        entryFileNames: '[name].js',
+        assetFileNames: '[name][extname]',
+        chunkFileNames: '[name].js',
+      }
     }
   }
 })

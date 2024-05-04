@@ -4,8 +4,10 @@
   "name": "NetBuddy Extension",
 
   "icons": {
+    "16": "icons/netbuddylogo-16.png",
+    "32": "icons/netbuddylogo-32.png",
     "48": "icons/netbuddylogo-48.png",
-    "96": "icons/netbuddylogo-96.png"
+    "128": "icons/netbuddylogo-128.png"
   },
 
   "action": {
@@ -13,7 +15,8 @@
   },
 
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
 
   "permissions": [
