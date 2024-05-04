@@ -1,19 +1,21 @@
 console.log('XPath content script loaded');
 
 document.body.style.cursor = 'crosshair';
-document.addEventListener('click', handleClick);
+document.addEventListener('auxclick', handleClick);
+
+// doing all the things that need doing when removing listener
+function removeListener() {
+  document.removeEventListener('auxclick', handleClick);
+  document.body.style.cursor = 'default';
+}
 
 // Remove event listener when tab is changed
-chrome.tabs.onActivated.addListener(() => {
-  document.removeEventListener('click', handleClick);
-  document.body.style.cursor = 'default';
-})
+chrome.tabs.onActivated.addListener(removeListener);
 
 // handle click event
 async function handleClick(event: MouseEvent) {
   const element = document.elementFromPoint(event.clientX, event.clientY);
-  document.removeEventListener('click', handleClick);
-  document.body.style.cursor = 'default';
+  removeListener();
   await navigator.clipboard.writeText(getElementXPath(element) as string);
 }
 

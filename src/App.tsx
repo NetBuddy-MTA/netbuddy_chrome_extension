@@ -9,12 +9,10 @@ function App() {
 
   async function handleClick(event: MouseEvent) {
     event.preventDefault();
-    console.log('clicked');
-    const tab = await chrome.tabs.query({active: true, lastFocusedWindow: true});
-    console.log(tab[0].url);
+    const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
     await chrome.scripting.executeScript({
-      target: {tabId: tab[0].id!, allFrames: true},
-      files: ['xpath.js']
+      target: {tabId: tab.id!, allFrames: true},
+      files: ['GetElementXPath.js']
     });
   }
 
