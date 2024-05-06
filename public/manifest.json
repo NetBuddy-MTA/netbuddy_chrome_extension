@@ -13,7 +13,8 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["content.js"],
+      "ExecutionWorld": "MAIN"
     }
   ],
 
@@ -31,7 +32,9 @@
     "background",
     "tabs",
     "clipboardWrite",
-    "contextMenus"
+    "clipboardRead",
+    "contextMenus",
+    "storage"
   ],
 
   "host_permissions": [

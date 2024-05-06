@@ -1,39 +1,34 @@
-const enum BgCommandType {
-  CreateTab,
-  NavigateToURL,
-  CloseTab
-}
-
 type BgCommand = {
-  command: BgCommandType,
+  command: string,
   url?: string,
   tabId?: number
 };
 
+// keep alive
+const keepAlive = () => setInterval(chrome.runtime.getPlatformInfo, 20e3);
+chrome.runtime.onStartup.addListener(keepAlive);
+keepAlive();
+
+// add listener for messages from other scripts
 chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
   if (message as BgCommand) {
-    switch (message.command) {
-      case BgCommandType.CreateTab:
-        sendResponse(await createTab(message.url));
-        break;
+    if (message.command === 'CreateTab')
+      sendResponse(await createTab(message.url));
 
-      case BgCommandType.NavigateToURL:
-        if (message.url && message.tabId)
-          sendResponse(await navigateToURL(message.tabId, message.url));
-        else
-          sendResponse(null);
-        break;
+    else if (message.command === 'NavigateToURL')
+      if (message.url && message.tabId)
+        sendResponse(await navigateToURL(message.tabId, message.url));
+      else
+        sendResponse(null);
 
-      case BgCommandType.CloseTab:
-        if (message.tabId)
-          sendResponse(await closeTab(message.tabId));
-        else
-          sendResponse(null);
-        break;
+    else if (message.command === 'CloseTab')
+      if (message.tabId)
+        sendResponse(await closeTab(message.tabId));
+      else
+        sendResponse(null);
 
-      default:
-        break;
-    }
+    else
+      console.log("Invalid command");
   }
 });
 
@@ -60,12 +55,24 @@ const menuItems: {
   onClick: (info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.Tab) => void;
 }[] = [
   {
-    id: 'netbuddy_xpath',
+    id: 'netbuddy_get_element_xpath',
     title: 'Get XPath',
     contexts: ['all'],
     onClick: async (info, tab) => {
       if (info && tab && tab.id)
         await chrome.tabs.sendMessage(tab.id, {command: 'GetElementXPath'});
+    }
+  },
+  {
+    id: 'netbuddy_get_elements_by_xpath',
+    title: 'Get Elements by XPath',
+    contexts: ['all'],
+    onClick: async (info, tab) => {
+      if (info && tab && tab.id) {
+        const query = await chrome.storage.local.get('xpath');
+        if (query && query.xpath)
+            await chrome.tabs.sendMessage(tab.id, {command: 'GetElementsByXPath', xpath_selector: query.xpath});
+      }
     }
   }
 ];

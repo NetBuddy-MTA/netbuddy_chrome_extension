@@ -8,11 +8,15 @@ type CSCommand = {
 // adding listener for messages from extension
 chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
   if (message as CSCommand) {
-    if (message.command === 'GetElementXPath')
+    console.log("Received message", message);
+    if (message.command === 'GetElementXPath') {
       getXPathForElement();
+    }
+
     else if (message.command === 'GetElementsByXPath')
       if (message.xpath_selector)
         sendResponse(getElementsByXPath(message.xpath_selector));
+
     else
       sendResponse(null);
   }
@@ -32,7 +36,12 @@ function getXPathForElement() {
   async function handleClick(event: MouseEvent) {
     const element = document.elementFromPoint(event.clientX, event.clientY);
     removeListener();
-    await navigator.clipboard.writeText(getElementXPath(element) as string);
+    let xpath = getElementXPath(element);
+    if (xpath) {
+      xpath = "/" + xpath;
+      await navigator.clipboard.writeText(xpath);
+    }
+    await chrome.storage.local.set({xpath});
   }
 
   // Get the XPath for the element
@@ -78,14 +87,19 @@ function getXPathForElement() {
 
 // Get the elements that match the xpath query
 function getElementsByXPath(xpath: string) {
+  console.log("getting elements by xpath", xpath);
   const elements = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);
   const results = [];
   let element = elements.iterateNext();
   while (element) {
-    results.push(<Element>element);
+    results.push(<HTMLElement>element);
     element = elements.iterateNext();
   }
   // todo: remove this, for testing only
   console.log(results);
+  // change each element border color to red
+  results.forEach((element) => {
+    element.style.border = '3px solid red';
+  });
   return results;
 }
