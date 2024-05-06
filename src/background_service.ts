@@ -1,5 +1,6 @@
 type BgCommand = {
   command: string,
+  storeResult?: string,
   url?: string,
   tabId?: number
 };
@@ -13,17 +14,11 @@ keepAlive();
 chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
   if (message as BgCommand) {
     if (message.command === 'CreateTab')
-      sendResponse(await createTab(message.url));
+      sendResponse(await createTab(message.url, message.storeResult));
 
     else if (message.command === 'NavigateToURL')
       if (message.url && message.tabId)
-        sendResponse(await navigateToURL(message.tabId, message.url));
-      else
-        sendResponse(null);
-
-    else if (message.command === 'CloseTab')
-      if (message.tabId)
-        sendResponse(await closeTab(message.tabId));
+        sendResponse(await navigateToURL(message.tabId, message.url, message.storeResult));
       else
         sendResponse(null);
 
@@ -33,21 +28,20 @@ chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
 });
 
 // creates a new tab and returns the tab object
-async function createTab(url?: string) {
-  return await chrome.tabs.create({url});
+async function createTab(url?: string, storeResult?: string) {
+  const result = await chrome.tabs.create({url});
+  storeResult && await chrome.storage.local.set({storeResult: result});
+  return result;
 }
 
 // navigates to a URL in a tab
-async function navigateToURL(tabId: number, url: string) {
-  return await chrome.tabs.update(tabId, {url});
+async function navigateToURL(tabId: number, url: string, storeResult?: string) {
+  const result = await chrome.tabs.update(tabId, {url});
+  storeResult && await chrome.storage.local.set({storeResult: result});
+  return result;
 }
 
-// closes a tab
-async function closeTab(tabId: number) {
-  return await chrome.tabs.remove(tabId);
-}
-
-// add context menu and listener for context menu click
+// define context menu items and onClick handler
 const menuItems: {
   id: string;
   contexts: chrome.contextMenus.ContextType[];
@@ -60,7 +54,7 @@ const menuItems: {
     contexts: ['all'],
     onClick: async (info, tab) => {
       if (info && tab && tab.id)
-        await chrome.tabs.sendMessage(tab.id, {command: 'GetElementXPath'});
+        await chrome.tabs.sendMessage(tab.id, {command: 'GetElementXPath', storeResult: 'xpath'});
     }
   },
   {
@@ -71,12 +65,37 @@ const menuItems: {
       if (info && tab && tab.id) {
         const query = await chrome.storage.local.get('xpath');
         if (query && query.xpath)
-            await chrome.tabs.sendMessage(tab.id, {command: 'GetElementsByXPath', xpath_selector: query.xpath});
+            await chrome.tabs.sendMessage(tab.id, {
+              command: 'GetElementsByXPath',
+              storeResult: 'elements',
+              xpath_selector: query.xpath
+            });
       }
+    }
+  },
+  {
+    id: 'netbuddy_create_new_tab',
+    title: 'Create New Tab',
+    contexts: ['all'],
+    onClick: async (info, tab) => {
+      const query = await chrome.storage.local.get('url');
+      if (info && tab)
+        await createTab(query.url, 'tab');
+    }
+  },
+  {
+    id: 'netbuddy_navigate_to_url',
+    title: 'Navigate to URL',
+    contexts: ['all'],
+    onClick: async (info, tab) => {
+      const query = await chrome.storage.local.get(['tab', 'url']);
+      if (info && tab && query && query.url && query.tab)
+        await navigateToURL(query.tab.tabId as number, query.url, 'tab');
     }
   }
 ];
 
+// add context menu items
 chrome.runtime.onInstalled.addListener(() => {
   menuItems.forEach(item => {
     const {id, title, contexts} = item;
