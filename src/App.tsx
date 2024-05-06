@@ -32,9 +32,8 @@ function App() {
     });
 
     await chrome.runtime.sendMessage({
-      command: CSCommandType.GetElementsByXPath,
+      command: 'GetElementsByXPath',
       xpath_selector: xpath,
-      is_result: false
     } as CSCommand);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

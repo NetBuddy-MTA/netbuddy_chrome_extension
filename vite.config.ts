@@ -15,6 +15,7 @@ const entryPoints = {
 export default defineConfig({
   plugins: [react()],
   build: {
+    minify: false,
     rollupOptions: {
       input: entryPoints,
       output: {

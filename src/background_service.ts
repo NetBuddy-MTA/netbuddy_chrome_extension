@@ -1,4 +1,4 @@
-enum BgCommandType {
+const enum BgCommandType {
   CreateTab,
   NavigateToURL,
   CloseTab
@@ -62,19 +62,20 @@ const menuItems: {
   {
     id: 'netbuddy_xpath',
     title: 'Get XPath',
-    contexts: ['selection'] as chrome.contextMenus.ContextType[],
+    contexts: ['all'],
     onClick: async (info, tab) => {
       if (info && tab && tab.id)
-        await chrome.tabs.sendMessage(tab.id, {command: CSCommandType.GetElementXPath} as CSCommand);
+        await chrome.tabs.sendMessage(tab.id, {command: 'GetElementXPath'});
     }
   }
 ];
 
 chrome.runtime.onInstalled.addListener(() => {
   menuItems.forEach(item => {
-    const id = chrome.contextMenus.create({...item});
+    const {id, title, contexts} = item;
+    const itemId = chrome.contextMenus.create({id, title, contexts});
     chrome.contextMenus.onClicked.addListener((info, tab) => {
-      info.menuItemId === id && item.onClick(info, tab);
+      info.menuItemId === itemId && item.onClick(info, tab);
     });
   });
 });

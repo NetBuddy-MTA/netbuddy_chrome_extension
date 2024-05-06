@@ -1,10 +1,5 @@
-enum CSCommandType {
-  GetElementXPath,
-  GetElementsByXPath,
-}
-
 type CSCommand = {
-  command: CSCommandType,
+  command: string,
   url?: string,
   xpath_selector?: string,
   css_selector?: string,
@@ -13,19 +8,13 @@ type CSCommand = {
 // adding listener for messages from extension
 chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
   if (message as CSCommand) {
-    switch (message.command) {
-      case CSCommandType.GetElementXPath:
-        getXPathForElement();
-        break;
-
-      case CSCommandType.GetElementsByXPath:
-        if (message.xpath_selector)
-          sendResponse(getElementsByXPath(message.xpath_selector));
-        break;
-
-      default:
-        break;
-    }
+    if (message.command === 'GetElementXPath')
+      getXPathForElement();
+    else if (message.command === 'GetElementsByXPath')
+      if (message.xpath_selector)
+        sendResponse(getElementsByXPath(message.xpath_selector));
+    else
+      sendResponse(null);
   }
 });
 
@@ -38,9 +27,6 @@ function getXPathForElement() {
     document.removeEventListener('contextmenu', handleClick);
     document.body.style.cursor = 'default';
   }
-
-  // Remove event listener when tab is changed
-  chrome.tabs.onActivated.addListener(removeListener);
 
   // handle click event
   async function handleClick(event: MouseEvent) {
