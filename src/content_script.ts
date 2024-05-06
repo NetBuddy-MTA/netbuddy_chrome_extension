@@ -8,15 +8,19 @@ type CSCommand = {
   url?: string,
   xpath_selector?: string,
   css_selector?: string,
-  is_result: boolean
 };
 
 // adding listener for messages from extension
-chrome.runtime.onMessage.addListener(async (message, _sender, _sendResponse) => {
+chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
   if (message as CSCommand) {
     switch (message.command) {
       case CSCommandType.GetElementXPath:
         getXPathForElement();
+        break;
+
+      case CSCommandType.GetElementsByXPath:
+        if (message.xpath_selector)
+          sendResponse(getElementsByXPath(message.xpath_selector));
         break;
 
       default:
@@ -84,4 +88,18 @@ function getXPathForElement() {
 
     return paths.length ? "/" + paths.join("/") : null;
   }
+}
+
+// Get the elements that match the xpath query
+function getElementsByXPath(xpath: string) {
+  const elements = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);
+  const results = [];
+  let element = elements.iterateNext();
+  while (element) {
+    results.push(<Element>element);
+    element = elements.iterateNext();
+  }
+  // todo: remove this, for testing only
+  console.log(results);
+  return results;
 }
