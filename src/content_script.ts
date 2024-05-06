@@ -1,28 +1,38 @@
 type CSCommand = {
   command: string,
+  storeResult?: string,
   url?: string,
   xpath_selector?: string,
   css_selector?: string,
+  element?: HTMLElement
 };
 
 // adding listener for messages from extension
 chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
   if (message as CSCommand) {
-    console.log("Received message", message);
-    if (message.command === 'GetElementXPath') {
-      getXPathForElement();
-    }
+    if (message.command === 'GetElementXPath')
+      getXPathForElement(message.storeResult);
 
     else if (message.command === 'GetElementsByXPath')
       if (message.xpath_selector)
-        sendResponse(getElementsByXPath(message.xpath_selector));
+        sendResponse(getElementsByXPath(message.xpath_selector, message.storeResult));
+
+    else if (message.command === 'PressElement')
+      message.element && pressElement(message.element);
+
+    else if (message.command === 'ReadElementText')
+      message.element && sendResponse(readElementText(message.element, message.storeResult));
+
+    else if (message.command === 'WriteElementText')
+      message.element && sendResponse(writeElementText(message.element, message.storeResult));
 
     else
       sendResponse(null);
   }
 });
 
-function getXPathForElement() {
+// Get the XPath for the element clicked
+function getXPathForElement(storeResult?: string) {
   document.body.style.cursor = 'crosshair';
   document.addEventListener('contextmenu', handleClick);
 
@@ -41,7 +51,7 @@ function getXPathForElement() {
       xpath = "/" + xpath;
       await navigator.clipboard.writeText(xpath);
     }
-    await chrome.storage.local.set({xpath});
+    storeResult && await chrome.storage.local.set({storeResult: xpath});
   }
 
   // Get the XPath for the element
@@ -86,7 +96,7 @@ function getXPathForElement() {
 }
 
 // Get the elements that match the xpath query
-function getElementsByXPath(xpath: string) {
+function getElementsByXPath(xpath: string, storeResult?: string) {
   console.log("getting elements by xpath", xpath);
   const elements = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);
   const results = [];
@@ -101,5 +111,30 @@ function getElementsByXPath(xpath: string) {
   results.forEach((element) => {
     element.style.border = '3px solid red';
   });
+
+  storeResult && chrome.storage.local.set({storeResult: results});
   return results;
+}
+
+// Press the parameter element
+function pressElement(element: HTMLElement) {
+  element.click();
+}
+
+// read the text contents of the element
+function readElementText(element: HTMLElement, storeResult?: string) {
+  const result = element.innerText;
+  storeResult && chrome.storage.local.set({storeResult: result});
+  return result;
+}
+
+// write text to element if it is an input element
+function writeElementText(element: HTMLElement, text: string, storeResult?: string) {
+  const result = element instanceof HTMLInputElement;
+  storeResult && chrome.storage.local.set({storeResult: result});
+  if (result) {
+    element.value = text;
+    return true;
+  }
+  return false;
 }
