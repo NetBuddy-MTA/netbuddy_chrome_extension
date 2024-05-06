@@ -10,6 +10,13 @@
     "128": "icons/netbuddylogo-128.png"
   },
 
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+
   "action": {
     "default_popup": "index.html"
   },
@@ -23,7 +30,8 @@
     "scripting",
     "background",
     "tabs",
-    "clipboardWrite"
+    "clipboardWrite",
+    "contextMenus"
   ],
 
   "host_permissions": [
