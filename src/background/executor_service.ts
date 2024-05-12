@@ -11,7 +11,7 @@ let running = false;
 
 // request sequence from server by id
 async function getSequence(id: string) {
-  const res = await fetch(`https://localhost:7298/sequences?id=${id}`);
+  const res = await fetch(`https://localhost:7298/execution/sequences/${id}`);
   return await res.json() as Sequence;
 }
 
