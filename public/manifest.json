@@ -34,10 +34,12 @@
     "clipboardWrite",
     "clipboardRead",
     "contextMenus",
-    "storage"
+    "storage",
+    "webRequest",
+    "alarms"
   ],
 
   "host_permissions": [
-    "*://*/*"
+    "<all_urls>"
   ]
 }
