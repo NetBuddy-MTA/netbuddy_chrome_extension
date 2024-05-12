@@ -6,7 +6,7 @@ const entryPoints = {
   // main
   main: path.resolve(__dirname, 'index.html'),
   // background service
-  background: path.resolve(__dirname, 'src/background_service.ts'),
+  background: path.resolve(__dirname, 'src/background/executor_service.ts'),
   // content script
   content: path.resolve(__dirname, 'src/content_script.ts'),
 }
