@@ -1,5 +1,5 @@
 export type Variable = {
-  origName: string,
+  originalName: string,
   name: string,
   type: string,
   optional: boolean,

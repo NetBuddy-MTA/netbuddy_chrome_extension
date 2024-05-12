@@ -6,7 +6,7 @@ import Tab = chrome.tabs.Tab;
 // url?: string - the URL to navigate to
 export async function createTab(params: ActionParams, context: Map<string, unknown>) {
   // get the url input variable if exists in context
-  const urlInput = params.inputs.find(value => value.origName === 'url');
+  const urlInput = params.inputs.find(value => value.originalName === 'Url');
   let url;
   if (urlInput) {
     // get the url from the context
@@ -16,7 +16,7 @@ export async function createTab(params: ActionParams, context: Map<string, unkno
   // create the tab
   const tab = await chrome.tabs.create({url});
   // get the tab output variable if exists in context
-  const tabOutput = params.outputs.find(value => value.origName === 'tab');
+  const tabOutput = params.outputs.find(value => value.originalName === 'Tab');
   // store the tab in the context
   tabOutput && context.set(tabOutput.name, tab);
   return tab;
@@ -25,14 +25,14 @@ export async function createTab(params: ActionParams, context: Map<string, unkno
 // navigates to a URL in a tab
 export async function navigateToURL(params: ActionParams, context: Map<string, unknown>) {
   // get the tab input variable if exists in context
-  const tabInput = params.inputs.find(value => value.origName === 'tab');
+  const tabInput = params.inputs.find(value => value.originalName === 'Tab');
   if (!tabInput) return;
   // get the tab from the context
   const tab = context.get(tabInput.name) as Tab;
   // check if the tab is associated with a tab id
   if (!tab.id) return;
   // get the url input variable if exists in context
-  const urlInput = params.inputs.find(value => value.origName === 'url');
+  const urlInput = params.inputs.find(value => value.originalName === 'Url');
   if (!urlInput) return;
   // get the url from the context
   const url = context.get(urlInput.name) as string;
@@ -40,7 +40,7 @@ export async function navigateToURL(params: ActionParams, context: Map<string, u
   const result = await chrome.tabs.update(tab.id, {url});
   
   // get the tab output variable if exists in context
-  const tabOutput = params.outputs.find(value => value.origName === 'tab');
+  const tabOutput = params.outputs.find(value => value.originalName === 'Tab');
   // store the tab in the context
   tabOutput && context.set(tabOutput.name, result);
   return result;
