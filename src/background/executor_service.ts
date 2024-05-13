@@ -1,5 +1,5 @@
-import {Action, ActionResult, Sequence} from "./data.ts"
-import {createTab, navigateToURL} from "./background_actions.ts";
+import {Action, ActionResult, Sequence} from "../shared/data.ts"
+import {contentScriptAction, createTab, navigateToURL} from "./background_actions.ts";
 import {InitSequenceAlarm} from "./utils.ts";
 
 // try to run a sequence from the run queue every roughly 4 seconds
@@ -38,13 +38,18 @@ async function executeAction(action: Action, context: Map<string, unknown>) {
   action.inputs.forEach(input => 
     input.defaultValue && !context.has(input.name) && context.set(input.name, input.defaultValue));
   
-  switch (action.ActionString) {
+  switch (action.actionString) {
     case "CreateTab":
-      await createTab({inputs: action.inputs, outputs: action.outputs}, context);
+      await createTab(action, context);
       break;
     
     case "NavigateToURL":
-      await navigateToURL({inputs: action.inputs, outputs: action.outputs}, context);
+      await navigateToURL(action, context);
+      break;
+      
+    // for all content script actions
+    default:
+      await contentScriptAction(action, context);
       break;
       
   }
