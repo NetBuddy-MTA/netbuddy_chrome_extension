@@ -4,18 +4,13 @@ export type Variable = {
   type: string,
   optional: boolean,
   defaultValue?: unknown
-}
+};
 
 export type Action = {
-  ActionString: string,
+  actionString: string,
   inputs: Variable[],
   outputs: Variable[]
 };
-
-export type ActionParams = {
-  inputs: Variable[],
-  outputs: Variable[]
-}
 
 export type Sequence = {
   id: string,

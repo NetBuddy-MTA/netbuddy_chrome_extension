@@ -1,12 +1,12 @@
 // keep alive
-import {ActionParams} from "./data.ts";
+import {Action} from "../shared/data.ts";
 import Tab = chrome.tabs.Tab;
 
 // creates a new tab and returns the tab object
 // url?: string - the URL to navigate to
-export async function createTab(params: ActionParams, context: Map<string, unknown>) {
+export async function createTab(action: Action, context: Map<string, unknown>) {
   // get the url input variable if exists in context
-  const urlInput = params.inputs.find(value => value.originalName === 'Url');
+  const urlInput = action.inputs.find(value => value.originalName === 'Url');
   let url;
   if (urlInput) {
     // get the url from the context
@@ -16,23 +16,23 @@ export async function createTab(params: ActionParams, context: Map<string, unkno
   // create the tab
   const tab = await chrome.tabs.create({url});
   // get the tab output variable if exists in context
-  const tabOutput = params.outputs.find(value => value.originalName === 'Tab');
+  const tabOutput = action.outputs.find(value => value.originalName === 'Tab');
   // store the tab in the context
   tabOutput && context.set(tabOutput.name, tab);
   return tab;
 }
 
 // navigates to a URL in a tab
-export async function navigateToURL(params: ActionParams, context: Map<string, unknown>) {
+export async function navigateToURL(action: Action, context: Map<string, unknown>) {
   // get the tab input variable if exists in context
-  const tabInput = params.inputs.find(value => value.originalName === 'Tab');
+  const tabInput = action.inputs.find(value => value.originalName === 'Tab');
   if (!tabInput) return;
   // get the tab from the context
   const tab = context.get(tabInput.name) as Tab;
   // check if the tab is associated with a tab id
   if (!tab.id) return;
   // get the url input variable if exists in context
-  const urlInput = params.inputs.find(value => value.originalName === 'Url');
+  const urlInput = action.inputs.find(value => value.originalName === 'Url');
   if (!urlInput) return;
   // get the url from the context
   const url = context.get(urlInput.name) as string;
@@ -40,10 +40,22 @@ export async function navigateToURL(params: ActionParams, context: Map<string, u
   const result = await chrome.tabs.update(tab.id, {url});
   
   // get the tab output variable if exists in context
-  const tabOutput = params.outputs.find(value => value.originalName === 'Tab');
+  const tabOutput = action.outputs.find(value => value.originalName === 'Tab');
   // store the tab in the context
   tabOutput && context.set(tabOutput.name, result);
   return result;
+}
+
+export async function contentScriptAction(action: Action, context: Map<string, unknown>) {
+  // get the tab input variable if exists in context
+  const tabInput = action.inputs.find(value => value.originalName === 'Tab');
+  if (!tabInput) return;
+  // get the tab from the context
+  const tab = context.get(tabInput.name) as Tab;
+  // send the message to the content script of the tab
+  const result = await chrome.tabs.sendMessage(tab.id as number, {action: action, context});
+  // get all the outputs from the result and save them to the context
+  action.outputs.forEach(value => context.set(value.name, result[value.name]));
 }
 
 // define context menu items and onClick handler
