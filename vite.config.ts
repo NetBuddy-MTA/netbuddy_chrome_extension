@@ -8,7 +8,7 @@ const entryPoints = {
   // background service
   background: path.resolve(__dirname, 'src/background/executor_service.ts'),
   // content script
-  content: path.resolve(__dirname, 'src/content_script.ts'),
+  content: path.resolve(__dirname, 'src/content/content_script.ts'),
 }
 
 // https://vitejs.dev/config/
