@@ -2,9 +2,26 @@
 import {Action} from "../shared/data.ts";
 import Tab = chrome.tabs.Tab;
 
+// creates a new chrome window and returns the window object
+export async function createWindow(action: Action, context: Map<string, unknown>) {
+  // create the window
+  const window = await chrome.windows.create();
+  // get the window output variable if exists in context
+  const windowOutput = action.outputs.find(value => value.originalName === 'Window');
+  // store the window in the context
+  windowOutput && context.set(windowOutput.name, window);
+  return window;
+}
+
 // creates a new tab and returns the tab object
 // url?: string - the URL to navigate to
 export async function createTab(action: Action, context: Map<string, unknown>) {
+  // get the window input variable if exists in context
+  const windowInput = action.inputs.find(value => value.originalName === 'Window');
+  if (!windowInput) return;
+  // get the window from the context
+  const windowParam = context.get(windowInput.name);
+  const window = windowParam as chrome.windows.Window;
   // get the url input variable if exists in context
   const urlInput = action.inputs.find(value => value.originalName === 'Url');
   let url;
@@ -14,7 +31,7 @@ export async function createTab(action: Action, context: Map<string, unknown>) {
     url = urlParam as string;
   }
   // create the tab
-  const tab = await chrome.tabs.create({url});
+  const tab = await chrome.tabs.create({windowId: window.id, url});
   // get the tab output variable if exists in context
   const tabOutput = action.outputs.find(value => value.originalName === 'Tab');
   // store the tab in the context
@@ -46,6 +63,7 @@ export async function navigateToURL(action: Action, context: Map<string, unknown
   return result;
 }
 
+// sends a message to the content script of a tab and returns the result
 export async function contentScriptAction(action: Action, context: Map<string, unknown>) {
   // get the tab input variable if exists in context
   const tabInput = action.inputs.find(value => value.originalName === 'Tab');
@@ -56,6 +74,7 @@ export async function contentScriptAction(action: Action, context: Map<string, u
   const result = await chrome.tabs.sendMessage(tab.id as number, {action: action, context});
   // get all the outputs from the result and save them to the context
   action.outputs.forEach(value => context.set(value.name, result[value.name]));
+  return result;
 }
 
 // define context menu items and onClick handler
