@@ -63,6 +63,62 @@ export async function navigateToURL(action: Action, context: Map<string, unknown
   return result;
 }
 
+// closes a chrome window
+export async function closeWindow(action: Action, context: Map<string, unknown>) {
+  // get the window input variable
+  const windowInput = action.inputs.find(value => value.originalName === 'Window');
+  if (!windowInput) return;
+  // get the window from the context
+  const window = context.get(windowInput.name) as chrome.windows.Window;
+  // close the window
+  await chrome.windows.remove(window.id!);
+}
+
+// sends an http/s request and stores the response
+export async function httpRequest(action: Action,  context: Map<string, unknown>) {
+  // get the request url input variable
+  const urlInput = action.inputs.find(value => value.originalName === 'Url');
+  // get the method input variable
+  const methodInput = action.inputs.find(value => value.originalName === 'Method');
+  // get the headers input variable
+  const headersInput = action.inputs.find(value => value.originalName === 'Headers');
+  // check that all mandatory variables are defined and set all optionals to default
+  if (!urlInput) return;
+  const url = context.get(urlInput.name) as string;
+
+  let method, headers;
+  
+  if (!methodInput) method = 'GET';
+  else method = context.get(methodInput.name) as string;
+  
+  if (!headersInput) headers = {};
+  else headers = context.get(headersInput.name) as Headers;
+  
+  // send request
+  const response = await fetch(url, {method, headers});
+  
+  // get the response output variable
+  const responseOutput = action.outputs.find(value => value.originalName === 'Response');
+  if (responseOutput) context.set(responseOutput.name, response); 
+  
+  return response;
+}
+
+// set a variable to a value
+export async function setVariable(action: Action, context: Map<string, unknown>) {
+  // get the variable to set input
+  const variableInput = action.inputs.find(value => value.originalName === 'Variable');
+  // get the value to set input
+  const valueInput = action.inputs.find(value => value.originalName === 'Value');
+  // null check
+  if (variableInput && valueInput) {
+    // get the value from the context
+    const value = context.get(valueInput.name);
+    // set the variable in the context
+    context.set(variableInput.name, value);
+  }
+}
+
 // sends a message to the content script of a tab and returns the result
 export async function contentScriptAction(action: Action, context: Map<string, unknown>) {
   // get the tab input variable if exists in context
