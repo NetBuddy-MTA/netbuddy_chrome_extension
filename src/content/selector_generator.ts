@@ -1,14 +1,9 @@
 import {Selector} from "../shared/data.ts";
 
-// remove the listener once any tab creates a new selector
-chrome.storage.session.onChanged.addListener(changes => {
-  'Selector' in changes && changes.Selector.newValue as Selector && removeListener();
-});
-
 // listener for messages from extension
-chrome.runtime.onMessage.addListener((message) => {
-  message as string && message === 'StartGetSelector' && getXPathForElement();
-  message as string && message === 'StopGetSelector' && removeListener();
+chrome.runtime.onMessage.addListener(message => {
+  if (message as string && message === 'StartGetSelector') getXPathForElement();
+  if (message as string && message === 'StopGetSelector') removeListener();
 });
 
 // Get the XPath for the element clicked
@@ -22,8 +17,10 @@ async function handleClick(event: MouseEvent) {
   const element = document.elementFromPoint(event.clientX, event.clientY);
   removeListener();
   const selector = getElementSelector(element);
-  // todo: send to server
-  await chrome.storage.local.set({Selector: selector});
+  if (selector) {
+    await chrome.runtime.sendMessage(selector);
+    await chrome.runtime.sendMessage('StopGetSelector');
+  }
 }
 
 // doing all the things that need doing when removing listener
