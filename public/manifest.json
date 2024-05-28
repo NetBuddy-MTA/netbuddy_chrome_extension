@@ -15,6 +15,11 @@
       "matches": ["<all_urls>"],
       "js": ["content.js"],
       "ExecutionWorld": "MAIN"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["selector_generator.js"],
+      "ExecutionWorld": "MAIN"
     }
   ],
 

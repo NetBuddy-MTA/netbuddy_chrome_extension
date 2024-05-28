@@ -9,6 +9,7 @@ const entryPoints = {
   background: path.resolve(__dirname, 'src/background/executor_service.ts'),
   // content script
   content: path.resolve(__dirname, 'src/content/content_script.ts'),
+  selector_generator: path.resolve(__dirname, 'src/content/selector_generator.ts'),
 }
 
 // https://vitejs.dev/config/
