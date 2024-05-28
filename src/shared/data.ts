@@ -23,3 +23,17 @@ export type ActionResult = {
   action: number,
   data: JSON
 };
+
+export type Selector = {
+  id: string;
+  url: string;
+  name: string;
+  stages: SelectorStage[];
+};
+
+export type SelectorStage = {
+  tag: string;
+  attributes: Map<string, string>;
+  useAttributes: Map<string, boolean>;
+  inUse: boolean;
+};
