@@ -1,6 +1,18 @@
 import {Action, ActionResult, Sequence} from "../shared/data.ts"
 import {contentScriptAction, createTab, navigateToURL} from "./background_actions.ts";
 import {InitSequenceAlarm} from "./utils.ts";
+import {menuItems} from "./context_menu_items.ts";
+
+// add context menu items
+chrome.runtime.onInstalled.addListener(() => {
+  menuItems.forEach(item => {
+    const {id, title, contexts} = item;
+    const itemId = chrome.contextMenus.create({id, title, contexts});
+    chrome.contextMenus.onClicked.addListener((info, tab) => {
+      info.menuItemId === itemId && item.onClick(info, tab);
+    });
+  });
+});
 
 // try to run a sequence from the run queue every roughly 4 seconds
 InitSequenceAlarm(runSequence);
