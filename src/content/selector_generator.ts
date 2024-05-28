@@ -57,7 +57,7 @@ function getElementSelector(element: Element | null): Selector | null {
       return acc;
     }, new Map<string, boolean>);
     
-    selector.stages.push({
+    selector.stages.unshift({
       tag,
       inUse: true,
       attributes,
