@@ -33,7 +33,7 @@ export type Selector = {
 
 export type SelectorStage = {
   tag: string;
-  attributes: Map<string, string>;
-  useAttributes: Map<string, boolean>;
+  attributes: { [key: string]: string };
+  useAttributes: { [key: string]: boolean };
   inUse: boolean;
 };

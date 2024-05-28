@@ -16,10 +16,10 @@ export function selectorToString(selector: Selector): string {
     // add the tag to the stage string
     stageString += stage.tag;
     // add the attributes in use to the stage string
-    stage.attributes.forEach((value, key) => {
-      if (!stage.useAttributes.get(key)) return;
-      stageString += `[${key}="${value}"]`;
-    });
+    for (const key in stage.attributes) {
+      if (!stage.useAttributes[key]) continue;
+      stageString += `[${key}="${stage.attributes[key]}"]`;
+    }
     
     // add the stage string to the selector string
     selectorString += stageString;

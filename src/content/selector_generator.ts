@@ -47,14 +47,13 @@ function getElementSelector(element: Element | null): Selector | null {
     // get all attributes of the element into maps
     const attrs = [...element.attributes];
     const attributes = attrs.reduce((acc, attr) => {
-      acc.set(attr.name, attr.value);
+      acc[attr.name] = attr.value;
       return acc;
-    }, new Map<string, string>);
+    }, {} as { [key: string]: string });
     const useAttributes = attrs.reduce((acc, attr) => {
-      if (attr.name === "id") acc.set(attr.name, true);
-      else acc.set(attr.name, false);
+      acc[attr.name] = attr.name === "id";
       return acc;
-    }, new Map<string, boolean>);
+    }, {} as { [key: string]: boolean });
     
     selector.stages.unshift({
       tag,
@@ -68,7 +67,7 @@ function getElementSelector(element: Element | null): Selector | null {
   let use = true;
   for (let i = selector.stages.length - 1; i >= 0; i--) {
     selector.stages[i].inUse = use;
-    if (use && selector.stages[i].attributes.has("id")) use = false;
+    if (use && "id" in selector.stages[i].attributes) use = false;
   }
   
   return selector;
