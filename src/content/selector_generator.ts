@@ -36,7 +36,7 @@ function getElementSelector(element: Element | null): Selector | null {
   const selector: Selector = {
     id: "",
     name: "",
-    url: location.href,
+    url: new URL(location.href).origin,
     stages: []
   };
 
