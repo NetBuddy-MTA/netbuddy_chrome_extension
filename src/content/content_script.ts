@@ -3,7 +3,7 @@ import {Action} from "../shared/data.ts";
 
 // adding listener for messages from extension
 chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
-  if (message as {action: Action, context: Map<string, unknown>}) {
+  if (message as {action: Action, context: Map<string, unknown>} && message.action && message.context) {
     const {action, context} = message;
     switch (action.actionString) {
       case 'ClickElement':
