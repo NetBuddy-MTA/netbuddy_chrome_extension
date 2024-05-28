@@ -22,6 +22,7 @@ async function handleClick(event: MouseEvent) {
   const element = document.elementFromPoint(event.clientX, event.clientY);
   removeListener();
   const selector = getElementSelector(element);
+  // todo: send to server
   await chrome.storage.local.set({Selector: selector});
 }
 
@@ -53,7 +54,8 @@ function getElementSelector(element: Element | null): Selector | null {
       return acc;
     }, new Map<string, string>);
     const useAttributes = attrs.reduce((acc, attr) => {
-      if (attr.name === "id") acc.set(attr.value, true);
+      if (attr.name === "id") acc.set(attr.name, true);
+      else acc.set(attr.name, false);
       return acc;
     }, new Map<string, boolean>);
     
@@ -70,7 +72,7 @@ function getElementSelector(element: Element | null): Selector | null {
   for (let i = selector.stages.length - 1; i >= 0; i--) {
     selector.stages[i].inUse = use;
     if (use && selector.stages[i].attributes.has("id")) use = false;
-  } 
+  }
   
   return selector;
 }
