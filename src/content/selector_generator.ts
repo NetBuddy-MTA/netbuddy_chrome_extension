@@ -1,9 +1,14 @@
 import {Selector} from "../shared/data.ts";
 
 // listener for messages from extension
-chrome.runtime.onMessage.addListener(message => {
+chrome.runtime.onMessage.addListener(async message => {
   if (message as string && message === 'StartGetSelector') getXPathForElement();
   if (message as string && message === 'StopGetSelector') removeListener();
+  if (message.selector !== undefined && message.selector.id !== undefined && message.cropping !== undefined && message.dataUrl !== undefined) {
+    console.log("Received message:");
+    console.log(message);
+    await chrome.runtime.sendMessage({selector: {...message.selector, base64Image: await cropImage(message.cropping, message.dataUrl)}});
+  }
 });
 
 // Get the XPath for the element clicked
@@ -15,10 +20,14 @@ export function getXPathForElement() {
 // handle click event
 async function handleClick(event: MouseEvent) {
   const element = document.elementFromPoint(event.clientX, event.clientY);
+  if (element === null) return;
   removeListener();
   const selector = getElementSelector(element);
   if (selector) {
-    await chrome.runtime.sendMessage(selector);
+    const message = {selector, cropping: {left: element.clientLeft, top: element.clientTop, width: element.clientWidth, height: element.clientHeight}};
+    console.log("Sending initial:");
+    console.log(message);
+    await chrome.runtime.sendMessage({selector, cropping: element.getBoundingClientRect()});
     await chrome.runtime.sendMessage('StopGetSelector');
   }
 }
@@ -71,4 +80,23 @@ function getElementSelector(element: Element | null): Selector | null {
   }
   
   return selector;
+}
+
+async function cropImage(rect: DOMRect, dataUrl: string) {
+  const canvas = document.createElement('canvas');
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  console.log("canvas: ", canvas);
+  const context = canvas.getContext('2d');
+  console.log("context: ", context !== null);
+  const cropped = new Image();
+  
+  cropped.onload = () => {
+    context!.drawImage(cropped, rect.x, rect.y, rect.width, rect.height, 0, 0, rect.width, rect.height);
+  }
+  cropped.src = dataUrl;
+  
+  await cropped.decode();
+  
+  return canvas.toDataURL();
 }

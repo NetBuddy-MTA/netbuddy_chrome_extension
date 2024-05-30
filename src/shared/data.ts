@@ -29,6 +29,7 @@ export type Selector = {
   url: string;
   name: string;
   stages: SelectorStage[];
+  base64Image?: string;
 };
 
 export type SelectorStage = {
