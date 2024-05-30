@@ -5,8 +5,6 @@ chrome.runtime.onMessage.addListener(async message => {
   if (message as string && message === 'StartGetSelector') getXPathForElement();
   if (message as string && message === 'StopGetSelector') removeListener();
   if (message.selector !== undefined && message.selector.id !== undefined && message.cropping !== undefined && message.dataUrl !== undefined) {
-    console.log("Received message:");
-    console.log(message);
     await chrome.runtime.sendMessage({selector: {...message.selector, base64Image: await cropImage(message.cropping, message.dataUrl)}});
   }
 });
@@ -24,9 +22,6 @@ async function handleClick(event: MouseEvent) {
   removeListener();
   const selector = getElementSelector(element);
   if (selector) {
-    const message = {selector, cropping: {left: element.clientLeft, top: element.clientTop, width: element.clientWidth, height: element.clientHeight}};
-    console.log("Sending initial:");
-    console.log(message);
     await chrome.runtime.sendMessage({selector, cropping: element.getBoundingClientRect()});
     await chrome.runtime.sendMessage('StopGetSelector');
   }
@@ -84,15 +79,16 @@ function getElementSelector(element: Element | null): Selector | null {
 
 async function cropImage(rect: DOMRect, dataUrl: string) {
   const canvas = document.createElement('canvas');
-  canvas.width = rect.width;
-  canvas.height = rect.height;
-  console.log("canvas: ", canvas);
+  canvas.width = rect.width * window.devicePixelRatio;
+  canvas.height = rect.height * window.devicePixelRatio;
   const context = canvas.getContext('2d');
-  console.log("context: ", context !== null);
   const cropped = new Image();
   
   cropped.onload = () => {
-    context!.drawImage(cropped, rect.x, rect.y, rect.width, rect.height, 0, 0, rect.width, rect.height);
+    context!.drawImage(cropped, 
+      rect.x * window.devicePixelRatio, rect.y * window.devicePixelRatio, 
+      rect.width * window.devicePixelRatio, rect.height * window.devicePixelRatio, 
+      0, 0, rect.width * window.devicePixelRatio, rect.height * window.devicePixelRatio);
   }
   cropped.src = dataUrl;
   
