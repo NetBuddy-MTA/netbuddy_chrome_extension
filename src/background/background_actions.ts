@@ -104,21 +104,6 @@ export async function httpRequest(action: Action,  context: Map<string, unknown>
   return response;
 }
 
-// set a variable to a value
-export async function setVariable(action: Action, context: Map<string, unknown>) {
-  // get the variable to set input
-  const variableInput = action.inputs.find(value => value.originalName === 'Variable');
-  // get the value to set input
-  const valueInput = action.inputs.find(value => value.originalName === 'Value');
-  // null check
-  if (variableInput && valueInput) {
-    // get the value from the context
-    const value = context.get(valueInput.name);
-    // set the variable in the context
-    context.set(variableInput.name, value);
-  }
-}
-
 // sends a message to the content script of a tab and returns the result
 export async function contentScriptAction(action: Action, context: Map<string, unknown>) {
   // get the tab input variable if exists in context
