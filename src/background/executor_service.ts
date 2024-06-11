@@ -1,5 +1,12 @@
 import {Action, ActionResult, Sequence} from "../shared/data.ts"
-import {contentScriptAction, createTab, navigateToURL} from "./background_actions.ts";
+import {
+  closeWindow,
+  contentScriptAction,
+  createTab,
+  createWindow,
+  httpRequest,
+  navigateToURL
+} from "./background_actions.ts";
 import {InitSequenceAlarm} from "./utils.ts";
 import {menuItems} from "./context_menu_items.ts";
 
@@ -51,12 +58,24 @@ async function executeAction(action: Action, context: Map<string, unknown>) {
     input.defaultValue && !context.has(input.name) && context.set(input.name, input.defaultValue));
   
   switch (action.actionString) {
+    case "CreateWindow":
+      await createWindow(action, context);
+      break;
+      
+    case "CloseWindow":
+      await closeWindow(action, context);
+      break;
+    
     case "CreateTab":
       await createTab(action, context);
       break;
     
     case "NavigateToURL":
       await navigateToURL(action, context);
+      break;
+      
+    case "HttpRequest":
+      await httpRequest(action, context);
       break;
       
     // for all content script actions
