@@ -1,25 +1,32 @@
 import {Selector} from "../shared/data.ts";
 
+chrome.storage.local.onChanged.addListener(async (changes) => {
+  if ("createSelector" in changes) {
+    if (changes.createSelector.newValue && !changes.createSelector.oldValue) getXPathForElement();
+    else if (!changes.createSelector.newValue && changes.createSelector.oldValue) await removeListener();
+  }
+})
+
 // listener for messages from extension
 chrome.runtime.onMessage.addListener(async message => {
   if (message as string && message === 'StartGetSelector') getXPathForElement();
-  if (message as string && message === 'StopGetSelector') removeListener();
+  if (message as string && message === 'StopGetSelector') await removeListener();
   if (message.selector !== undefined && message.selector.id !== undefined && message.cropping !== undefined && message.dataUrl !== undefined) {
     await chrome.runtime.sendMessage({selector: {...message.selector, base64Image: await cropImage(message.cropping, message.dataUrl)}});
   }
 });
 
 // Get the XPath for the element clicked
-export function getXPathForElement() {
+export const getXPathForElement = () => {
   document.body.style.cursor = 'crosshair';
   document.addEventListener('contextmenu', handleClick);
 }
 
 // handle click event
-async function handleClick(event: MouseEvent) {
+const handleClick = async (event: MouseEvent) => {
   const element = document.elementFromPoint(event.clientX, event.clientY);
   if (element === null) return;
-  removeListener();
+  await removeListener();
   const selector = getElementSelector(element);
   if (selector) {
     await chrome.runtime.sendMessage({selector, cropping: element.getBoundingClientRect()});
@@ -28,13 +35,14 @@ async function handleClick(event: MouseEvent) {
 }
 
 // doing all the things that need doing when removing listener
-function removeListener() {
+const removeListener = async () => {
   document.removeEventListener('contextmenu', handleClick);
   document.body.style.cursor = 'default';
+  await chrome.storage.local.set({createSelector: false});
 }
 
 // get the selector for this element
-function getElementSelector(element: Element | null): Selector | null {
+const getElementSelector = (element: Element | null): Selector | null => {
   if (!element) return null;
   
   const selector: Selector = {
@@ -77,7 +85,7 @@ function getElementSelector(element: Element | null): Selector | null {
   return selector;
 }
 
-async function cropImage(rect: DOMRect, dataUrl: string) {
+const cropImage = async (rect: DOMRect, dataUrl: string) => {
   const canvas = document.createElement('canvas');
   canvas.width = rect.width * window.devicePixelRatio;
   canvas.height = rect.height * window.devicePixelRatio;
@@ -96,3 +104,7 @@ async function cropImage(rect: DOMRect, dataUrl: string) {
   
   return canvas.toDataURL();
 }
+
+chrome.storage.local.get('createSelector').then(result => {
+  if ("createSelector" in result && result.createSelector) getXPathForElement();
+});

@@ -20,6 +20,11 @@
       "matches": ["<all_urls>"],
       "js": ["selector_generator.js"],
       "ExecutionWorld": "MAIN"
+    },
+    {
+      "matches": ["https://localhost:5173/*"],
+      "js": ["netbuddy_content.js"],
+      "ExecutionWorld": "MAIN"
     }
   ],
 
@@ -36,12 +41,12 @@
     "scripting",
     "background",
     "tabs",
+    "contextMenus",
+    "webRequest",
+    "alarms",
     "clipboardWrite",
     "clipboardRead",
-    "contextMenus",
-    "storage",
-    "webRequest",
-    "alarms"
+    "storage"
   ],
 
   "host_permissions": [

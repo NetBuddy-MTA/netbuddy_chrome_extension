@@ -10,6 +10,7 @@ const entryPoints = {
   // content script
   content: path.resolve(__dirname, 'src/content/content_script.ts'),
   selector_generator: path.resolve(__dirname, 'src/content/selector_generator.ts'),
+  netbuddy_content: path.resolve(__dirname, 'src/content/netbuddy_content.ts')
 }
 
 // https://vitejs.dev/config/
