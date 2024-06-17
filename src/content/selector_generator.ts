@@ -2,14 +2,14 @@ import {Selector} from "../shared/data.ts";
 
 chrome.storage.local.onChanged.addListener(async (changes) => {
   if ("createSelector" in changes) {
-    if (changes.createSelector.newValue && !changes.createSelector.oldValue) getXPathForElement();
+    if (changes.createSelector.newValue && !changes.createSelector.oldValue) await getXPathForElement();
     else if (!changes.createSelector.newValue && changes.createSelector.oldValue) await removeListener();
   }
 })
 
 // listener for messages from extension
 chrome.runtime.onMessage.addListener(async message => {
-  if (message as string && message === 'StartGetSelector') getXPathForElement();
+  if (message as string && message === 'StartGetSelector') await getXPathForElement();
   if (message as string && message === 'StopGetSelector') await removeListener();
   if (message.selector !== undefined && message.selector.id !== undefined && message.cropping !== undefined && message.dataUrl !== undefined) {
     await chrome.runtime.sendMessage({selector: {...message.selector, base64Image: await cropImage(message.cropping, message.dataUrl)}});
@@ -17,7 +17,8 @@ chrome.runtime.onMessage.addListener(async message => {
 });
 
 // Get the XPath for the element clicked
-export const getXPathForElement = () => {
+export const getXPathForElement = async () => {
+  await chrome.storage.local.set({createSelector: true});
   document.body.style.cursor = 'crosshair';
   document.addEventListener('contextmenu', handleClick);
 }
