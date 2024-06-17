@@ -1,4 +1,5 @@
 import {Selector} from "../shared/data.ts";
+import {addDebugRects} from "./utils.ts";
 
 chrome.storage.local.onChanged.addListener(async (changes) => {
   if ("createSelector" in changes) {
@@ -16,11 +17,33 @@ chrome.runtime.onMessage.addListener(async message => {
   }
 });
 
+let currentElement: Element | undefined = undefined;
+let currentOverlay: HTMLElement | undefined = undefined;
 // Get the XPath for the element clicked
-export const getXPathForElement = async () => {
+const getXPathForElement = async () => {
   await chrome.storage.local.set({createSelector: true});
   document.body.style.cursor = 'crosshair';
   document.addEventListener('contextmenu', handleClick);
+  document.documentElement.onmousemove = (event: MouseEvent) => {
+    const [element] = document.elementsFromPoint(event.clientX, event.clientY).filter(e => e.className !== 'NetBuddyOverlayRect');
+    // if the element is the same as the current element, do nothing
+    if (element === currentElement || element === currentOverlay) return;
+    // remove previous overlay if it exists
+    if (currentOverlay instanceof HTMLElement) document.documentElement.removeChild(currentOverlay);
+    // set new current element
+    currentElement = element;
+    if (element === undefined) return;
+    // set new overlay
+    [currentOverlay] = addDebugRects([element.getBoundingClientRect()]);
+    currentOverlay.onclick = async () => {
+      await removeListener();
+      const selector = getElementSelector(element);
+      if (selector) {
+        await chrome.runtime.sendMessage({selector, cropping: element.getBoundingClientRect()});
+        await chrome.runtime.sendMessage('StopGetSelector');
+      }
+    };
+  };
 }
 
 // handle click event
@@ -37,9 +60,17 @@ const handleClick = async (event: MouseEvent) => {
 
 // doing all the things that need doing when removing listener
 const removeListener = async () => {
+  document.documentElement.onmousemove = null;
   document.removeEventListener('contextmenu', handleClick);
   document.body.style.cursor = 'default';
   await chrome.storage.local.set({createSelector: false});
+  console.log('Selector creation stopped')
+  console.log('Removing overlay:', currentOverlay);
+  if (currentOverlay !== undefined) {
+    document.documentElement.removeChild(currentOverlay);
+    currentOverlay = undefined;
+    currentElement = undefined;
+  }
 }
 
 // get the selector for this element
