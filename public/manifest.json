@@ -19,7 +19,8 @@
     {
       "matches": ["<all_urls>"],
       "js": ["selector_generator.js"],
-      "ExecutionWorld": "MAIN"
+      "ExecutionWorld": "MAIN",
+      "exclude_matches": ["https://localhost:5173/*"]
     },
     {
       "matches": ["https://localhost:5173/*"],
