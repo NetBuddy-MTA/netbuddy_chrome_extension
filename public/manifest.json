@@ -44,8 +44,6 @@
     "contextMenus",
     "webRequest",
     "alarms",
-    "clipboardWrite",
-    "clipboardRead",
     "storage"
   ],
 
