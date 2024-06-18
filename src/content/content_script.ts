@@ -1,9 +1,9 @@
-import {clickElement, readElementText, writeElementText} from "./content_actions.ts";
+import {clickElement, findElementsBySelector, readElementText, writeElementText} from "./content_actions.ts";
 import {Action} from "../shared/data.ts";
 
 // adding listener for messages from extension
 chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
-  if (message as {action: Action, context: Map<string, unknown>} && message.action && message.context) {
+  if (message as {action: Action, context: Record<string, unknown>} && message.action && message.context) {
     const {action, context} = message;
     switch (action.actionString) {
       case 'ClickElement':
@@ -15,7 +15,11 @@ chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
         break;
 
       case 'WriteElementText':
-        sendResponse(writeElementText(message.element, message.storeResult));
+        sendResponse(writeElementText(action, context));
+        break;
+        
+      case 'FindElementsBySelector':
+        sendResponse(findElementsBySelector(action, context));
         break;
     }
   }
