@@ -1,5 +1,5 @@
 // Press the parameter element
-import {Action, Selector} from "../shared/data.ts";
+import {Action} from "../shared/data.ts";
 
 export function clickElement(action: Action, context: Record<string, unknown>) {
   // find the element input variable in the context
@@ -60,15 +60,11 @@ export function findElementsBySelector(action: Action, context: Record<string, u
   // if the selector or tab input is not found, return an empty object
   if (!selectorInput) return [];
   // get the selector from the context
-  const selector = context[selectorInput.name] as Selector;
+  const selector = JSON.parse(context[selectorInput.name] as string) as string;
   // get the matching elements
-  const elements = document.evaluate(selectorToString(selector), document, null, XPathResult.ANY_TYPE, null);
-  const results = [];
-  let element = elements.iterateNext();
-  while (element) {
-    results.push(<HTMLElement>element);
-    element = elements.iterateNext();
-  }
+  const elements = document.querySelectorAll(selector);
+  const results: HTMLElement[] = [];
+  elements.forEach(element => results.push(<HTMLElement>element));
   // todo: remove this, for testing only
   console.log(results);
   // change each element border color to red
@@ -78,29 +74,8 @@ export function findElementsBySelector(action: Action, context: Record<string, u
   return results;
 }
 
-function selectorToString(selector: Selector): string {
-  let selectorString = "";
-  let prevInUse = false;
-  for (const stage of selector.stages) {
-    // if the stage is not in use, skip it and set the prevInUse flag to false
-    if (!stage.inUse) {
-      prevInUse = false;
-      continue;
-    }
-    // initialize the stage string according to the context
-    let stageString = prevInUse ? " > " : (selectorString === "" ? "" : " ");
-    // set the prevInUse flag to true
-    prevInUse = true;
-    // add the tag to the stage string
-    stageString += stage.tag;
-    // add the attributes in use to the stage string
-    for (const key in stage.attributes) {
-      if (!stage.useAttributes[key]) continue;
-      stageString += `[${key}="${stage.attributes[key]}"]`;
-    }
-
-    // add the stage string to the selector string
-    selectorString += stageString;
-  }
-  return selectorString;
+// Get the first element that matches the query string
+export function findElementBySelector(action: Action, context: Record<string, unknown>) {
+  const [first] = findElementsBySelector(action, context);
+  return first;
 }
