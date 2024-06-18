@@ -111,13 +111,19 @@ export async function findElementsBySelector(action: Action, context: Record<str
   // find the tab input variable in the context
   const tabInput = action.inputs.find(value => value.originalName === 'Tab');
   // if the selector or tab input is not found, return an empty object
-  if (!selectorInput || !tabInput) return {};
+  if (!selectorInput || !tabInput) return [];
   // get the tab from the context
   const tab = context[tabInput.name] as Tab;
   // make the tab active
   await chrome.tabs.update(tab.id!, {active: true});
   // request the content script to find the elements
-  return await chrome.tabs.sendMessage(tab.id!, {action: action, context});
+  return await chrome.tabs.sendMessage(tab.id!, {action: action, context}) as HTMLElement[];
+}
+
+// Get the element that match the query string
+export async function findElementBySelector(action: Action, context: Record<string, unknown>) {
+  const [first] = await findElementsBySelector(action, context)
+  return first;
 }
 
 // sends a message to the content script of a tab and returns the result

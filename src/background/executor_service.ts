@@ -3,7 +3,7 @@ import {
   closeWindow,
   contentScriptAction,
   createTab,
-  createWindow,
+  createWindow, findElementBySelector, findElementsBySelector,
   httpRequest,
   navigateToURL
 } from "./background_actions.ts";
@@ -49,6 +49,14 @@ async function executeAction(action: Action, context: Record<string, unknown>) {
       
     case "HttpRequest":
       await httpRequest(action, context);
+      break;
+      
+    case "FindElementBySelector":
+      await findElementBySelector(action, context);
+      break;
+        
+    case "FindElementsBySelector":
+      await findElementsBySelector(action, context);
       break;
       
     // for all content script actions

@@ -1,6 +1,5 @@
 // Press the parameter element
 import {Action, Selector} from "../shared/data.ts";
-import {selectorToString} from "./utils.ts";
 
 export function clickElement(action: Action, context: Record<string, unknown>) {
   // find the element input variable in the context
@@ -54,12 +53,12 @@ export function writeElementText(action: Action, context: Record<string, unknown
   return {};
 }
 
-// Get the elements that match the xpath query
+// Get the elements that matches the query string
 export function findElementsBySelector(action: Action, context: Record<string, unknown>) {
   // find the selector input variable in the context
   const selectorInput = action.inputs.find(value => value.originalName === 'Selector');
   // if the selector or tab input is not found, return an empty object
-  if (!selectorInput) return {};
+  if (!selectorInput) return [];
   // get the selector from the context
   const selector = context[selectorInput.name] as Selector;
   // get the matching elements
@@ -77,4 +76,31 @@ export function findElementsBySelector(action: Action, context: Record<string, u
     element.style.border = '3px solid red';
   });
   return results;
+}
+
+function selectorToString(selector: Selector): string {
+  let selectorString = "";
+  let prevInUse = false;
+  for (const stage of selector.stages) {
+    // if the stage is not in use, skip it and set the prevInUse flag to false
+    if (!stage.inUse) {
+      prevInUse = false;
+      continue;
+    }
+    // initialize the stage string according to the context
+    let stageString = prevInUse ? " > " : (selectorString === "" ? "" : " ");
+    // set the prevInUse flag to true
+    prevInUse = true;
+    // add the tag to the stage string
+    stageString += stage.tag;
+    // add the attributes in use to the stage string
+    for (const key in stage.attributes) {
+      if (!stage.useAttributes[key]) continue;
+      stageString += `[${key}="${stage.attributes[key]}"]`;
+    }
+
+    // add the stage string to the selector string
+    selectorString += stageString;
+  }
+  return selectorString;
 }
