@@ -116,25 +116,59 @@ export async function findElementsBySelector(action: Action, context: Record<str
   const tab = context[tabInput.name] as Tab;
   // make the tab active
   await chrome.tabs.update(tab.id!, {active: true});
+  
+  while ((await chrome.tabs.get(tab.id!)).status !== 'complete');
+  
   // request the content script to find the elements
-  return await chrome.tabs.sendMessage(tab.id!, {action: action, context}) as HTMLElement[];
+  const results = await chrome.tabs.sendMessage(tab.id!, {action, context}) as HTMLElement[];
+  
+  // find the output element variable
+  const elementsOutput = action.outputs.find(value => value.originalName === 'Elements');
+  // if elements output exists save result to it 
+  if (elementsOutput) context[elementsOutput.name] = results.map(() => undefined);
+  // find the output count variable
+  const countOutput = action.outputs.find(value => value.originalName === 'Count');
+  // if the count output exists save the length to it
+  if (countOutput) context[countOutput.name] = results.length;
+  return results;
 }
 
 // Get the element that match the query string
 export async function findElementBySelector(action: Action, context: Record<string, unknown>) {
-  const [first] = await findElementsBySelector(action, context)
-  return first;
+  // find the selector input variable in the context
+  const selectorInput = action.inputs.find(value => value.originalName === 'Selector');
+  // find the tab input variable in the context
+  const tabInput = action.inputs.find(value => value.originalName === 'Tab');
+  // if the selector or tab input is not found, return an empty object
+  if (!selectorInput || !tabInput) return undefined;
+  // get the tab from the context
+  const tab = context[tabInput.name] as Tab;
+  // make the tab active
+  await chrome.tabs.update(tab.id!, {active: true});
+
+  while ((await chrome.tabs.get(tab.id!)).status !== 'complete');
+
+  // request the content script to find the elements
+  const result = await chrome.tabs.sendMessage(tab.id!, {action, context}) as HTMLElement[];
+
+  // find the output element variable
+  const elementOutput = action.outputs.find(value => value.originalName === 'Element');
+  // if elements output exists save result to it 
+  if (elementOutput) context[elementOutput.name] = undefined;
+  return result;
 }
 
 // sends a message to the content script of a tab and returns the result
 export async function contentScriptAction(action: Action, context: Record<string, unknown>) {
   // get the tab input variable if exists in context
   const tabInput = action.inputs.find(value => value.originalName === 'Tab');
-  if (!tabInput) return;
+  let tab: undefined | Tab;
   // get the tab from the context
-  const tab = context[tabInput.name] as Tab;
+  if (tabInput) tab = context[tabInput.name] as Tab;
+  // or the active tab
+  else [tab] = await chrome.tabs.query({active: true, currentWindow: true});
   // send the message to the content script of the tab
-  const result = await chrome.tabs.sendMessage(tab.id as number, {action: action, context});
+  const result = await chrome.tabs.sendMessage(tab.id as number, {action, context});
   // get all the outputs from the result and save them to the context
   action.outputs.forEach(value => context[value.name] = result[value.name]);
   return result;
