@@ -12,6 +12,10 @@ export async function GetQueue() {
   return await fetch(new URL('https://localhost:7298/execution/queue/all'), {method: "GET"});
 }
 
+export async function GetFirst() {
+  return await fetch(new URL('https://localhost:7298/execution/queue/first'), {method: "GET"});
+}
+
 export async function GetConfirmation(id: string) {
   return await fetch(new URL('https://localhost:7298/execution/queue/confirmation/' + id), {method: "GET"});
 }
