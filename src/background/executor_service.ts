@@ -9,7 +9,7 @@ import {
 } from "./background_actions.ts";
 import {InitSequenceAlarm} from "./utils.ts";
 import {menuItems} from "./context_menu_items.ts";
-import {GetQueue, Pipeline} from "../api/runQueue.ts";
+import {GetConfirmation, GetQueue, Pipeline} from "../api/runQueue.ts";
 
 // add context menu items
 chrome.runtime.onInstalled.addListener(() => {
@@ -64,13 +64,14 @@ async function executeAction(action: Action, context: Record<string, unknown>) {
 let running = false;
 const runSequence = async () => {
   // update run queue
-  const response = await GetQueue();
+  let response = await GetQueue();
   if (!response.ok) return;
   const pipeline: Pipeline = await response.json(); 
   // try to run a sequence
   if (!running) {
-    // todo: try and get confirmation for the pipeline
-    
+    // try and get confirmation for the pipeline
+    response = await GetConfirmation(pipeline.id);
+    if (!response.ok || await response.json() as string !== pipeline.id) return;
     // start running
     running = true;
     const sequence = pipeline.sequence;
@@ -85,6 +86,7 @@ const runSequence = async () => {
         console.log(result);
       }
     }
+    pipeline.isFinished = true;
     running = false;
   }
 }
