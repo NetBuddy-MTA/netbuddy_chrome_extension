@@ -3,13 +3,15 @@ import {
   closeWindow,
   contentScriptAction,
   createTab,
-  createWindow, findElementBySelector, findElementsBySelector,
+  createWindow,
+  findElementBySelector,
+  findElementsBySelector,
   httpRequest,
   navigateToURL
 } from "./background_actions.ts";
 import {InitSequenceAlarm} from "./utils.ts";
 import {menuItems} from "./context_menu_items.ts";
-import {GetConfirmation, GetQueue, Pipeline} from "../api/runQueue.ts";
+import {GetConfirmation, GetFirst, Pipeline} from "../api/runQueue.ts";
 
 // add context menu items
 chrome.runtime.onInstalled.addListener(() => {
@@ -72,23 +74,31 @@ async function executeAction(action: Action, context: Record<string, unknown>) {
 let running = false;
 const runSequence = async () => {
   // update run queue
-  let response = await GetQueue();
+  let response = await GetFirst();
   if (!response.ok) return;
-  const pipeline: Pipeline = await response.json(); 
+  const pipeline: Pipeline = await response.json();
+  console.log("got pipeline from runQueue successfully!");
+  console.log(pipeline);
   // try to run a sequence
+  console.log(`running: ${running}`);
   if (!running) {
     // try and get confirmation for the pipeline
     response = await GetConfirmation(pipeline.id);
+    console.log("confirmation response: ", response);
     if (!response.ok || await response.json() as string !== pipeline.id) return;
     // start running
-    running = true;
+    // todo: limit to one flow at a time when implementing timeout
+    // running = true;
     const sequence = pipeline.sequence;
+    console.log("sequence:", pipeline.sequence);
     if (sequence) {
       // create a new context for the sequence
       const context = pipeline.context;
+      console.log("context: ", context);
       
       // execute each action in the sequence
       for (const action of sequence.actions) {
+        console.log("action: ", action);
         const result = await executeAction(action, context);
         // todo: send result to server
         console.log(result);
