@@ -15,7 +15,7 @@ const observer = new MutationObserver((mutations) => {
     mutation.addedNodes.forEach(node => {
       if (node instanceof HTMLElement && node.id === 'CreateNewSelectorButton') {
         console.log('CreateNewSelectorButton found, modifying onclick');
-        node.onclick = onClick; 
+        node.onclick = onClick;
       }
     });
   });
