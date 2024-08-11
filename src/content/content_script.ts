@@ -11,10 +11,6 @@ import {Action} from "../shared/data.ts";
 chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
   if (message as {action: Action, context: Record<string, unknown>} && message.action && message.context) {
     const {action, context} = message;
-    console.log("action:");
-    console.log(action);
-    console.log("context:");
-    console.log(context);
     switch (action.actionString) {
       case 'ClickElement':
         sendResponse(clickElement(action, context));

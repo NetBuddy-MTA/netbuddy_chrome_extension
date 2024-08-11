@@ -30,17 +30,32 @@ export function readElementText(action: Action, context: Record<string, unknown>
 
 // write text to element if it is an input element
 export function writeElementText(action: Action, context: Record<string, unknown>) {
+  console.log('starting write element text');
   // find the element input variable in the context
-  const elementInput = action.inputs.find(value => value.originalName === 'Element');
+  const selectorInput = action.inputs.find(value => value.originalName === 'Selector');
+  // find the index input variable in the context
+  const indexInput = action.inputs.find(value => value.originalName === 'Index');
   // find the text input variable in the context
   const textInput = action.inputs.find(value => value.originalName === 'Text');
-  if (elementInput && textInput) {
+  console.log(selectorInput);
+  console.log(indexInput);
+  console.log(textInput);
+  if (selectorInput && indexInput && textInput) {
+    // get the index from the context
+    const index = JSON.parse(context[indexInput.name] as string) as number;
+    // get the elements matching the selector
+    const elements = findElementsBySelector(action, context);
+    if (elements.length + 1 < index) return;
     // get the element from the context
-    const element = context[elementInput.name] as HTMLElement;
+    const element = elements[index - 1];
+    console.log(`element variable:`);
+    console.log(JSON.stringify(element));
     // get the text from the context
     const text = context[textInput.name] as string;
+    console.log(text);
     // check if the element is an input element
     const result = element instanceof HTMLInputElement;
+    console.log(`element is input? ${result}`);
     // if the element is an input element, set the value to the text
     if (result) {
       element.value = text;
@@ -55,6 +70,7 @@ export function writeElementText(action: Action, context: Record<string, unknown
 
 // Get the elements that matches the query string
 export function findElementsBySelector(action: Action, context: Record<string, unknown>) {
+  console.log("Started finding elements");
   // find the selector input variable in the context
   const selectorInput = action.inputs.find(value => value.originalName === 'Selector');
   // if the selector or tab input is not found, return an empty object
