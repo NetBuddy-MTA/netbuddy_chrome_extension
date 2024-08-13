@@ -1,16 +1,30 @@
 // keep alive
-import {Action} from "../shared/data.ts";
+import {Action, Variable} from "../shared/data.ts";
 import Tab = chrome.tabs.Tab;
+
+function CreateEmptyResult(): {actionLogs: {key: string, value: string}[], actionOutputs: Map<Variable, unknown>} {
+  return {actionLogs: [], actionOutputs: new Map()};
+}
 
 // creates a new chrome window and returns the window object
 export async function createWindow(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
   // create the window
   const window = await chrome.windows.create();
+  actionLogs.push({key: "Success", value: `Window created (id ${window.id?.toString()})`})
   // get the window output variable if exists in context
   const windowOutput = action.outputs.find(value => value.originalName === 'Window');
   // store the window in the context
-  if (windowOutput) context[windowOutput.name] = window;
-  return window;
+  if (windowOutput) {
+    context[windowOutput.name] = window;
+    actionOutputs.set(windowOutput, window);
+  }
+  else {
+    actionLogs.push({key: "Warning", value: "Window output not defined!"});
+  }
+  return {actionLogs, actionOutputs};
 }
 
 // creates a new tab and returns the tab object
