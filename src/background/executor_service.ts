@@ -1,4 +1,4 @@
-import {Action, ActionResult} from "../shared/data.ts"
+import {Action, ActionResult, SequenceResult} from "../shared/data.ts"
 import {
   closeWindow,
   contentScriptAction,
@@ -12,6 +12,7 @@ import {
 import {InitSequenceAlarm} from "./utils.ts";
 import {menuItems} from "./context_menu_items.ts";
 import {GetConfirmation, GetFirst, Pipeline} from "../api/runQueue.ts";
+import {SaveRunResult} from "../api/history.ts";
 
 // add context menu items
 chrome.runtime.onInstalled.addListener(() => {
@@ -79,6 +80,13 @@ const runSequence = async () => {
   const pipeline: Pipeline = await response.json();
   console.log("got pipeline from runQueue successfully!");
   console.log(pipeline);
+  // initialize the sequence result object
+  const sequenceResult: SequenceResult = {
+    id: pipeline.id,
+    results: [],
+    startAt: new Date(),
+    endAt: new Date()
+  }
   // try to run a sequence
   console.log(`running: ${running}`);
   if (!running) {
@@ -100,12 +108,17 @@ const runSequence = async () => {
       for (const action of sequence.actions) {
         console.log("action: ", action);
         const result = await executeAction(action, context);
-        // todo: send result to server
-        console.log(result);
+        // add action result to list of results in sequence result
+        sequenceResult.results.push(result);
       }
     }
     pipeline.isFinished = true;
     running = false;
+    
+    // send the sequence result to the server
+    sequenceResult.endAt = new Date();
+    response = await SaveRunResult(sequenceResult);
+    if (!response.ok) console.log("failed to save sequence result"); 
   }
 }
 
