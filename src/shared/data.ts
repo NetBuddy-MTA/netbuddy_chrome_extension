@@ -19,9 +19,18 @@ export type Sequence = {
   actions: Action[]
 };
 
+export type SequenceResult = {
+  id: string;
+  startAt: Date;
+  endAt: Date;
+  results: ActionResult[];
+}
+
 export type ActionResult = {
-  action: number,
-  data: JSON
+  action: Action;
+  actionContext: Map<Variable, unknown>;
+  actionLogs: {key: string, value: string}[];
+  actionOutputs: Map<Variable, unknown>;
 };
 
 export type Selector = {
