@@ -243,7 +243,7 @@ export async function findElementBySelector(action: Action, context: Record<stri
   while ((await chrome.tabs.get(tab.id!)).status !== 'complete');
 
   // request the content script to find the elements
-  const result = await chrome.tabs.sendMessage(tab.id!, {action, context}) as HTMLElement[];
+  // const result = await chrome.tabs.sendMessage(tab.id!, {action, context}) as HTMLElement[];
   
   // todo: fix this using marking with label
   
