@@ -37,6 +37,7 @@ async function executeAction(action: Action, context: Record<string, unknown>) {
   action.inputs.forEach(input => actionContext.set(input, context[input.name]));
   
   // initialize the action logs and outputs
+  const startAt = new Date();
   let result;
   // pick and run the action
   switch (action.actionString) {
@@ -72,13 +73,16 @@ async function executeAction(action: Action, context: Record<string, unknown>) {
     default:
       result = await contentScriptAction(action, context);
       break;
-      
   }
+  
+  const endAt = new Date();
   
   return {
     action,
     actionContext,
-    ...result
+    ...result,
+    startAt,
+    endAt
   } as ActionResult;
 }
 
@@ -129,7 +133,7 @@ const runSequence = async () => {
     // send the sequence result to the server
     sequenceResult.endAt = new Date();
     response = await SaveRunResult(sequenceResult);
-    if (!response.ok) console.log("failed to save sequence result"); 
+    if (!response.ok) console.log("failed to save sequence result");
   }
 }
 

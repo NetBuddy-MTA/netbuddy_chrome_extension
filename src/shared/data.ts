@@ -28,6 +28,8 @@ export type SequenceResult = {
 
 export type ActionResult = {
   action: Action;
+  startAt: Date;
+  endAt: Date;
   actionContext: Map<Variable, unknown>;
   actionLogs: {key: string, value: string}[];
   actionOutputs: Map<Variable, unknown>;
