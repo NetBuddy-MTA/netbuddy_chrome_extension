@@ -193,6 +193,9 @@ export async function httpRequest(action: Action,  context: Record<string, unkno
 
 // Get the elements that match the xpath query
 export async function findElementsBySelector(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
   // find the selector input variable in the context
   const selectorInput = action.inputs.find(value => value.originalName === 'Selector');
   // find the tab input variable in the context
@@ -217,11 +220,15 @@ export async function findElementsBySelector(action: Action, context: Record<str
   const countOutput = action.outputs.find(value => value.originalName === 'Count');
   // if the count output exists save the length to it
   if (countOutput) context[countOutput.name] = results.length;
-  return results;
+  
+  return {actionLogs, actionOutputs};
 }
 
 // Get the element that match the query string
 export async function findElementBySelector(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
   // find the selector input variable in the context
   const selectorInput = action.inputs.find(value => value.originalName === 'Selector');
   // find the tab input variable in the context
@@ -237,12 +244,15 @@ export async function findElementBySelector(action: Action, context: Record<stri
 
   // request the content script to find the elements
   const result = await chrome.tabs.sendMessage(tab.id!, {action, context}) as HTMLElement[];
-
+  
+  // todo: fix this using marking with label
+  
   // find the output element variable
   const elementOutput = action.outputs.find(value => value.originalName === 'Element');
   // if elements output exists save result to it 
   if (elementOutput) context[elementOutput.name] = undefined;
-  return result;
+  
+  return {actionLogs, actionOutputs};
 }
 
 // sends a message to the content script of a tab and returns the result
@@ -255,9 +265,10 @@ export async function contentScriptAction(action: Action, context: Record<string
   // or the active tab
   else [tab] = await chrome.tabs.query({active: true, currentWindow: true});
   // send the message to the content script of the tab
-  const result = await chrome.tabs.sendMessage(tab.id as number, {action, context});
+  const {actionLogs, actionOutputs, modifiedContext} = await chrome.tabs.sendMessage(tab.id as number, {action, context});
   // get all the outputs from the result and save them to the context
-  action.outputs.forEach(value => context[value.name] = result[value.name]);
-  return result;
+  action.outputs.forEach(value => context[value.name] = modifiedContext[value.name]);
+  
+  return {actionLogs, actionOutputs};
 }
 
