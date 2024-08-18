@@ -30,9 +30,15 @@ export async function createWindow(action: Action, context: Record<string, unkno
 // creates a new tab and returns the tab object
 // url?: string - the URL to navigate to
 export async function createTab(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
   // get the window input variable if exists in context
   const windowInput = action.inputs.find(value => value.originalName === 'Window');
-  if (!windowInput) return;
+  if (!windowInput) {
+    actionLogs.push({key: "Error", value: "Window input not defined!"});
+    return {actionLogs, actionOutputs, fatal: true};
+  }
   // get the window from the context
   const windowParam = context[windowInput.name];
   const window = windowParam as chrome.windows.Window;
@@ -44,54 +50,96 @@ export async function createTab(action: Action, context: Record<string, unknown>
     const urlParam = context[urlInput.name];
     url = urlParam as string;
     if (url[0] === "\"") url = url.slice(1, -1);
+    actionLogs.push({key: "Info", value: `Navigating to ${url}`})
   }
   // create the tab
   const tab = await chrome.tabs.create({windowId: window.id, url});
   // get the tab output variable if exists in context
   const tabOutput = action.outputs.find(value => value.originalName === 'Tab');
   // store the tab in the context
-  if (tabOutput) context[tabOutput.name] = tab;
-  return tab;
+  if (tabOutput) {
+    context[tabOutput.name] = tab;
+    actionOutputs.set(tabOutput, tab);
+  }
+  else {
+    // todo: make sure this is necessary, tab might not need to be re-stored after changing url, needs more testing
+    actionLogs.push({key: "Warning", value: "Tab output not defined!"});
+  }
+  return {actionLogs, actionOutputs};
 }
 
 // navigates to a URL in a tab
 export async function navigateToURL(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
   // get the tab input variable if exists in context
   const tabInput = action.inputs.find(value => value.originalName === 'Tab');
-  if (!tabInput) return;
+  if (!tabInput) {
+    actionLogs.push({key: "Error", value: "Tab input not defined!"});
+    return {actionLogs, actionOutputs, fatal: true};
+  }
   // get the tab from the context
   const tab = context[tabInput.name] as Tab;
   // check if the tab is associated with a tab id
-  if (!tab.id) return;
+  if (!tab.id) {
+    actionLogs.push({key: "Error", value: "Tab id not defined!"});
+    return {actionLogs, actionOutputs, fatal: true};
+  }
   // get the url input variable if exists in context
   const urlInput = action.inputs.find(value => value.originalName === 'Url');
-  if (!urlInput) return;
+  if (!urlInput) {
+    actionLogs.push({key: "Warning", value: "Url input not defined! (this is a no-operation action)"});
+    return {actionLogs, actionOutputs};
+  }
   // get the url from the context
   let url = context[urlInput.name] as string;
   if (url[0] === "\"") url = url.slice(1, -1);
+  actionLogs.push({key: "Info", value: `Navigating to ${url}`})
   
   const result = await chrome.tabs.update(tab.id, {url});
   
   // get the tab output variable if exists in context
   const tabOutput = action.outputs.find(value => value.originalName === 'Tab');
   // store the tab in the context
-  if (tabOutput) context[tabOutput.name] = result;
-  return result;
+  if (tabOutput) {
+    context[tabOutput.name] = result;
+    actionOutputs.set(tabOutput, result);
+  }
+  else {
+    // todo: make sure this is necessary, tab might not need to be re-stored after changing url, needs more testing
+    actionLogs.push({key: "Warning", value: "Tab output not defined!"});
+  }
+  
+  return {actionLogs, actionOutputs};
 }
 
 // closes a chrome window
 export async function closeWindow(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
   // get the window input variable
   const windowInput = action.inputs.find(value => value.originalName === 'Window');
-  if (!windowInput) return;
+  if (!windowInput) {
+    actionLogs.push({key: "Error", value: "Window input not defined!"});
+    return {actionLogs, actionOutputs, fatal: true};
+  }
   // get the window from the context
   const window = context[windowInput.name] as chrome.windows.Window;
   // close the window
+  const id = window.id;
   await chrome.windows.remove(window.id!);
+  actionLogs.push({key: "Success", value: `Window closed (id ${id?.toString()})`})
+  
+  return {actionLogs, actionOutputs};
 }
 
 // sends an http/s request and stores the response
 export async function httpRequest(action: Action,  context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
   // get the request url input variable
   const urlInput = action.inputs.find(value => value.originalName === 'Url');
   // get the method input variable
@@ -99,25 +147,48 @@ export async function httpRequest(action: Action,  context: Record<string, unkno
   // get the headers input variable
   const headersInput = action.inputs.find(value => value.originalName === 'Headers');
   // check that all mandatory variables are defined and set all optionals to default
-  if (!urlInput) return;
+  if (!urlInput) {
+    actionLogs.push({key: "Error", value: "Url input not defined!"});
+    return {actionLogs, actionOutputs, fatal: true};
+  }
   const url = context[urlInput.name] as string;
 
   let method, headers;
   
-  if (!methodInput) method = 'GET';
-  else method = context[methodInput.name] as string;
+  if (!methodInput) {
+    method = 'GET';
+    actionLogs.push({key: "Warning", value: "Method input not defined! (defaulting to GET)"});
+  }
+  else {
+    method = context[methodInput.name] as string;
+    actionLogs.push({key: "Info", value: `Method: ${method}`});
+  }
   
-  if (!headersInput) headers = {};
-  else headers = context[headersInput.name] as Headers;
+  if (!headersInput) {
+    headers = {};
+    actionLogs.push({key: "Warning", value: "Headers input not defined! (defaulting to empty object)"});
+  }
+  else
+  {
+    headers = context[headersInput.name] as Headers;
+    actionLogs.push({key: "Info", value: `Headers: ${JSON.stringify(headers)}`});
+  }
   
   // send request
   const response = await fetch(url, {method, headers});
   
   // get the response output variable
   const responseOutput = action.outputs.find(value => value.originalName === 'Response');
-  if (responseOutput) context[responseOutput.name] = response; 
+  if (responseOutput) {
+    context[responseOutput.name] = response;
+    actionOutputs.set(responseOutput, response);
+    actionLogs.push({key: "Success", value: "Response saved to output variable"});
+  } 
+  else {
+    actionLogs.push({key: "Warning", value: "Response output not defined!"});
+  }
   
-  return response;
+  return {actionLogs, actionOutputs};
 }
 
 // Get the elements that match the xpath query
