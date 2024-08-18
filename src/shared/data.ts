@@ -31,6 +31,7 @@ export type ActionResult = {
   actionContext: Map<Variable, unknown>;
   actionLogs: {key: string, value: string}[];
   actionOutputs: Map<Variable, unknown>;
+  fatal?: boolean;
 };
 
 export type Selector = {
