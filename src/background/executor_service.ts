@@ -1,4 +1,4 @@
-import {Action, ActionResult, SequenceResult} from "../shared/data.ts"
+import {Action, ActionResult, SequenceResult, Variable} from "../shared/data.ts"
 import {
   closeWindow,
   contentScriptAction,
@@ -27,48 +27,59 @@ chrome.runtime.onInstalled.addListener(() => {
 
 // interpret the action and execute it
 async function executeAction(action: Action, context: Record<string, unknown>) {
-  // todo: implement action execution
   // load initial values to context if value wasn't assigned yet
   action.inputs.forEach(input => {
     if (input.defaultValue && !(input.name in context)) context[input.name] = input.defaultValue;
   });
   
+  // create the context for the result
+  const actionContext: Map<Variable, unknown> = new Map();
+  action.inputs.forEach(input => actionContext.set(input, context[input.name]));
+  
+  // initialize the action logs and outputs
+  let result;
+  // pick and run the action
   switch (action.actionString) {
     case "CreateWindow":
-      await createWindow(action, context);
+      result = await createWindow(action, context);
       break;
       
     case "CloseWindow":
-      await closeWindow(action, context);
+      result = await closeWindow(action, context);
       break;
     
     case "CreateTab":
-      await createTab(action, context);
+      result = await createTab(action, context);
       break;
     
     case "NavigateToURL":
-      await navigateToURL(action, context);
+      result = await navigateToURL(action, context);
       break;
       
     case "HttpRequest":
-      await httpRequest(action, context);
+      result = await httpRequest(action, context);
       break;
       
     case "FindElementBySelector":
-      await findElementBySelector(action, context);
+      result = await findElementBySelector(action, context);
       break;
         
     case "FindElementsBySelector":
-      await findElementsBySelector(action, context);
+      result = await findElementsBySelector(action, context);
       break;
       
     // for all content script actions
     default:
-      await contentScriptAction(action, context);
+      result = await contentScriptAction(action, context);
       break;
       
   }
-  return {} as ActionResult;
+  
+  return {
+    action,
+    actionContext,
+    ...result
+  } as ActionResult;
 }
 
 // gets the first to run from the run queue and tries to run it
