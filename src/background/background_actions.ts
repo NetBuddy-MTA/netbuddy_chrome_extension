@@ -265,10 +265,10 @@ export async function contentScriptAction(action: Action, context: Record<string
   // or the active tab
   else [tab] = await chrome.tabs.query({active: true, currentWindow: true});
   // send the message to the content script of the tab
-  const {actionLogs, actionOutputs, modifiedContext} = await chrome.tabs.sendMessage(tab.id as number, {action, context});
+  const {modifiedContext, ...result} = await chrome.tabs.sendMessage(tab.id as number, {action, context});
   // get all the outputs from the result and save them to the context
   action.outputs.forEach(value => context[value.name] = modifiedContext[value.name]);
   
-  return {actionLogs, actionOutputs};
+  return result;
 }
 

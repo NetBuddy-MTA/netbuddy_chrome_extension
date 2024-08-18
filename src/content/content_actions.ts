@@ -1,7 +1,14 @@
 // Press the parameter element
-import {Action} from "../shared/data.ts";
+import {Action, Variable} from "../shared/data.ts";
+
+function CreateEmptyResult(): {actionLogs: {key: string, value: string}[], actionOutputs: Map<Variable, unknown>} {
+  return {actionLogs: [], actionOutputs: new Map()};
+}
 
 export function clickElement(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
   // find the element input variable in the context
   const elementInput = action.inputs.find(value => value.originalName === 'Element');
   if (elementInput) {
@@ -10,11 +17,18 @@ export function clickElement(action: Action, context: Record<string, unknown>) {
     // click the element
     element.click();
   }
-  return {};
+  else {
+    actionLogs.push({key: 'Error', value: 'Element variable not defined!'});
+  }
+  
+  return {actionLogs, actionOutputs, modifiedContext: context};
 }
 
 // read the text contents of the element
 export function readElementText(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
   // find the element input variable in the context
   const elementInput = action.inputs.find(value => value.originalName === 'Element');
   if (elementInput) {
@@ -23,49 +37,70 @@ export function readElementText(action: Action, context: Record<string, unknown>
     const content = element instanceof HTMLInputElement ? element.value : element.innerText;
     // get the text output variable in the context
     const textOutput = action.outputs.find(value => value.originalName === 'Element Text');
-    return {...(textOutput && {[textOutput.name]: content})};
+    if (textOutput) {
+      actionOutputs.set(textOutput, content);
+      context[textOutput.name] = content;
+    } 
+    else {
+      actionLogs.push({key: 'Warning', value: 'Element Text variable not defined!'});
+    }
   }
-  return {};
+  else {
+    actionLogs.push({key: 'Error', value: 'Element variable not defined!'});
+  }
+  
+  return {actionLogs, actionOutputs, modifiedContext: context};
 }
 
 // write text to element if it is an input element
 export function writeElementText(action: Action, context: Record<string, unknown>) {
-  console.log('starting write element text');
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
   // find the element input variable in the context
   const selectorInput = action.inputs.find(value => value.originalName === 'Selector');
   // find the index input variable in the context
   const indexInput = action.inputs.find(value => value.originalName === 'Index');
   // find the text input variable in the context
   const textInput = action.inputs.find(value => value.originalName === 'Text');
-  console.log(selectorInput);
-  console.log(indexInput);
-  console.log(textInput);
+  
   if (selectorInput && indexInput && textInput) {
     // get the index from the context
     const index = JSON.parse(context[indexInput.name] as string) as number;
     // get the elements matching the selector
     const elements = findElementsBySelector(action, context);
-    if (elements.length + 1 < index) return;
+    if (elements.length + 1 < index) {
+      actionLogs.push({key: 'Error', value: 'Index out of range!'});
+      return {actionLogs, actionOutputs, modifiedContext: context, fatal: true};
+    }
     // get the element from the context
     const element = elements[index - 1];
-    console.log(`element variable:`);
-    console.log(JSON.stringify(element));
     // get the text from the context
     const text = context[textInput.name] as string;
-    console.log(text);
     // check if the element is an input element
     const result = element instanceof HTMLInputElement;
-    console.log(`element is input? ${result}`);
     // if the element is an input element, set the value to the text
     if (result) {
       element.value = text;
+      // get the result output variable in the context
+      const isInputOutput = action.outputs.find(value => value.originalName === 'Is Input');
+      if (isInputOutput) {
+        actionOutputs.set(isInputOutput, result);
+        context[isInputOutput.name] = result;
+      }
+      else {
+        actionLogs.push({key: 'Warning', value: 'Is Input variable not defined!'});
+      }
     }
-    
-    // get the result output variable in the context
-    const isInputOutput = action.outputs.find(value => value.originalName === 'Is Input');
-    return {...(isInputOutput && {[isInputOutput.name]: result})};
+    else {
+      actionLogs.push({key: 'Error', value: 'Element is not an input element!'});
+    }
   }
-  return {};
+  else {
+    actionLogs.push({key: 'Error', value: 'Not all input variables are defined!'});
+  }
+  
+  return {actionLogs, actionOutputs, modifiedContext: context};
 }
 
 // Get the elements that matches the query string
