@@ -47,3 +47,7 @@ export function selectorToString(selector: Selector): string {
   }
   return selectorString;
 }
+
+export function createUniqueElementLabel() {
+  return `NetBuddy-Element-Label-${crypto.randomUUID()}`
+}
