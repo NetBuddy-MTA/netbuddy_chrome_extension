@@ -13,10 +13,15 @@ export function clickElement(action: Action, context: Record<string, unknown>) {
   // find the element input variable in the context
   const elementInput = action.inputs.find(value => value.originalName === 'Element');
   if (elementInput) {
-    // get the element from the context
-    const element = context[elementInput.name] as HTMLElement;
+    // get the element label from the context
+    const elementLabel = context[elementInput.name] as string;
+    // get the element from the dom
+    const element = document.querySelector(`[${elementLabel}]`);
     // click the element
-    element.click();
+    if (element as HTMLInputElement) 
+      (<HTMLInputElement>element).click();
+    else
+      actionLogs.push({key: 'Error', value: 'Element is not an input element!'});
   }
   else {
     actionLogs.push({key: 'Error', value: 'Element variable not defined!'});
@@ -69,7 +74,7 @@ export function writeElementText(action: Action, context: Record<string, unknown
     // get the index from the context
     const index = JSON.parse(context[indexInput.name] as string) as number;
     // get the elements matching the selector
-    const elements = findElementsBySelector(action, context);
+    const elements = document.querySelectorAll(JSON.parse(context[selectorInput.name] as string) as string);
     if (elements.length + 1 < index) {
       actionLogs.push({key: 'Error', value: 'Index out of range!'});
       return {actionLogs, actionOutputs, modifiedContext: context, fatal: true};
