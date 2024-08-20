@@ -1,5 +1,6 @@
 // Press the parameter element
 import {Action, Variable} from "../shared/data.ts";
+import {createUniqueElementLabel} from "./utils.ts";
 
 function CreateEmptyResult(): {actionLogs: {key: string, value: string}[], actionOutputs: Map<Variable, unknown>} {
   return {actionLogs: [], actionOutputs: new Map()};
@@ -105,24 +106,50 @@ export function writeElementText(action: Action, context: Record<string, unknown
 
 // Get the elements that matches the query string
 export function findElementsBySelector(action: Action, context: Record<string, unknown>) {
-  console.log("Started finding elements");
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
   // find the selector input variable in the context
   const selectorInput = action.inputs.find(value => value.originalName === 'Selector');
   // if the selector or tab input is not found, return an empty object
-  if (!selectorInput) return [];
+  if (!selectorInput) {
+    actionLogs.push({key: "Error", value: "Selector input variable undefined!"});
+    return {actionLogs, actionOutputs, fatal: true};
+  }
+  
   // get the selector from the context
   const selector = JSON.parse(context[selectorInput.name] as string) as string;
+  
   // get the matching elements
   const elements = document.querySelectorAll(selector);
-  const results: HTMLElement[] = [];
-  elements.forEach(element => results.push(<HTMLElement>element));
-  // todo: remove this, for testing only
-  console.log(results);
+  
+  // get a unique label to track all found elements
+  const label = createUniqueElementLabel();
+  elements.forEach(element => element.setAttribute(label, ""));
+  // todo: remove this in the future, for testing only
   // change each element border color to red
-  results.forEach((element) => {
-    element.style.border = '3px solid red';
-  });
-  return results;
+  const results: HTMLElement[] = []
+  elements.forEach(element => results.push(<HTMLElement>element));
+  results.forEach(element => element.style.border = '3px solid red');
+  
+  // find the output variables
+  const elementsOutput = action.outputs.find(value => value.originalName === "Elements");
+  const countOutput = action.outputs.find(value => value.originalName === "Count");
+  
+  if (elementsOutput) {
+    actionOutputs.set(elementsOutput, label);
+    actionLogs.push({key: "Success", value: "Elements"})
+  }
+  else {
+    actionLogs.push({key: "Warning", value: "Elements output variable isn't defined!"});
+  }
+  
+  if (countOutput) {
+    
+  } else {
+    
+  }
+  
+  return {actionLogs, actionOutputs};
 }
 
 // Get the first element that matches the query string
