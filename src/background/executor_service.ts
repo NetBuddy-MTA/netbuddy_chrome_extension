@@ -103,25 +103,20 @@ const runSequence = async () => {
     endAt: new Date()
   }
   // try to run a sequence
-  console.log(`running: ${running}`);
   if (!running) {
     // try and get confirmation for the pipeline
     response = await GetConfirmation(pipeline.id);
-    console.log("confirmation response: ", response);
     if (!response.ok || await response.json() as string !== pipeline.id) return;
     // start running
     // todo: limit to one flow at a time when implementing timeout
     // running = true;
     const sequence = pipeline.sequence;
-    console.log("sequence:", pipeline.sequence);
     if (sequence) {
       // create a new context for the sequence
       const context = pipeline.context;
-      console.log("context: ", context);
       
       // execute each action in the sequence
       for (const action of sequence.actions) {
-        console.log("action: ", action);
         const result = await executeAction(action, context);
         // add action result to list of results in sequence result
         sequenceResult.results.push(result);
