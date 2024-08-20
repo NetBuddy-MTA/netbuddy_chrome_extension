@@ -36,11 +36,18 @@ export function readElementText(action: Action, context: Record<string, unknown>
   const {actionLogs, actionOutputs} = CreateEmptyResult();
   
   // find the element input variable in the context
-  const elementInput = action.inputs.find(value => value.originalName === 'Element');
-  if (elementInput) {
+  const elementLabelInput = action.inputs.find(value => value.originalName === 'Element');
+  if (elementLabelInput) {
     // get the element from the context
-    const element = context[elementInput.name] as HTMLElement;
-    const content = element instanceof HTMLInputElement ? element.value : element.innerText;
+    const elementLabel = context[elementLabelInput.name] as string;
+    // get the element from the dom
+    const element = document.querySelector(`[${elementLabel}]`);
+    if (!element) {
+      actionLogs.push({key: 'Error', value: 'Element not found!'});
+      return {actionLogs, actionOutputs, fatal: true};
+    }
+    // get the content of the element
+    const content = element instanceof HTMLInputElement ? element.value : (<HTMLInputElement>element).innerText;
     // get the text output variable in the context
     const textOutput = action.outputs.find(value => value.originalName === 'Element Text');
     if (textOutput) {
