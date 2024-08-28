@@ -30,7 +30,7 @@ export function clickElement(action: Action, context: Record<string, unknown>) {
     actionLogs.push({key: 'Error', value: 'Element variable not defined!'});
   }
   
-  return {actionLogs, actionOutputs, modifiedContext: context};
+  return {actionLogs, actionOutputs};
 }
 
 // read the text contents of the element
@@ -54,8 +54,7 @@ export function readElementText(action: Action, context: Record<string, unknown>
     // get the text output variable in the context
     const textOutput = action.outputs.find(value => value.originalName === 'Element Text');
     if (textOutput) {
-      actionOutputs.set(textOutput, content);
-      context[textOutput.name] = content;
+      actionOutputs[textOutput.name] = content;
     } 
     else {
       actionLogs.push({key: 'Warning', value: 'Element Text variable not defined!'});
@@ -65,7 +64,7 @@ export function readElementText(action: Action, context: Record<string, unknown>
     actionLogs.push({key: 'Error', value: 'Element variable not defined!'});
   }
   
-  return {actionLogs, actionOutputs, modifiedContext: context};
+  return {actionLogs, actionOutputs};
 }
 
 // write text to element if it is an input element
@@ -101,8 +100,7 @@ export function writeElementText(action: Action, context: Record<string, unknown
     // get the result output variable in the context
     const isInputOutput = action.outputs.find(value => value.originalName === 'Is Input');
     if (isInputOutput) {
-      actionOutputs.set(isInputOutput, isInputElement);
-      context[isInputOutput.name] = isInputElement;
+      actionOutputs[isInputOutput.name] = isInputElement;
     }
     else {
       actionLogs.push({key: 'Warning', value: 'Is Input variable not defined!'});
@@ -112,7 +110,7 @@ export function writeElementText(action: Action, context: Record<string, unknown
     actionLogs.push({key: 'Error', value: 'Element is not an input element!'});
   }
   
-  return {actionLogs, actionOutputs, modifiedContext: context};
+  return {actionLogs, actionOutputs};
 }
 
 // Get the elements that matches the query string
@@ -201,6 +199,6 @@ export function findElementBySelector(action: Action, context: Record<string, un
   else {
     actionLogs.push({key: "Warning", value: "Element output variable isn't defined!"});
   }
-
+  
   return {actionLogs, actionOutputs};
 }
