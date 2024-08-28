@@ -4,8 +4,6 @@ import {
   contentScriptAction,
   createTab,
   createWindow,
-  findElementBySelector,
-  findElementsBySelector,
   httpRequest,
   navigateToURL
 } from "./background_actions.ts";
@@ -13,6 +11,7 @@ import {InitSequenceAlarm} from "./utils.ts";
 import {menuItems} from "./context_menu_items.ts";
 import {GetConfirmation, GetFirst, Pipeline} from "../api/runQueue.ts";
 import {SaveRunResult} from "../api/history.ts";
+import {RegisterId} from "../api/register.ts";
 
 // add context menu items
 chrome.runtime.onInstalled.addListener(() => {
@@ -24,6 +23,9 @@ chrome.runtime.onInstalled.addListener(() => {
     });
   });
 });
+
+// register id with the server
+RegisterId(chrome.runtime.id).then();
 
 // interpret the action and execute it
 async function executeAction(action: Action, context: Record<string, unknown>) {
@@ -61,13 +63,13 @@ async function executeAction(action: Action, context: Record<string, unknown>) {
       result = await httpRequest(action, context);
       break;
       
-    case "FindElementBySelector":
-      result = await findElementBySelector(action, context);
-      break;
-        
-    case "FindElementsBySelector":
-      result = await findElementsBySelector(action, context);
-      break;
+    // case "FindElementBySelector":
+    //   result = await findElementBySelector(action, context);
+    //   break;
+    //    
+    // case "FindElementsBySelector":
+    //   result = await findElementsBySelector(action, context);
+    //   break;
       
     // for all content script actions
     default:
@@ -117,9 +119,11 @@ const runSequence = async () => {
       
       // execute each action in the sequence
       for (const action of sequence.actions) {
+        console.log(`Running ${action.actionString} action:`);
         const result = await executeAction(action, context);
         // add action result to list of results in sequence result
         sequenceResult.results.push(result);
+        console.log(result);
       }
     }
     pipeline.isFinished = true;

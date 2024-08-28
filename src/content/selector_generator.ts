@@ -17,11 +17,11 @@ chrome.runtime.onMessage.addListener(async message => {
   }
 });
 
-let currentElement: Element | undefined = undefined;
-let currentOverlay: HTMLElement | undefined = undefined;
+let currentElement: Element | null = null;
+let currentOverlay: HTMLElement | null = null;
 // Get the XPath for the element clicked
 const getXPathForElement = async () => {
-  await chrome.storage.local.set({createSelector: true});
+  await chrome.storage.local.set({createSelector: false});
   document.body.style.cursor = 'crosshair';
   document.addEventListener('contextmenu', handleClick);
   document.documentElement.onmousemove = (event: MouseEvent) => {
@@ -66,10 +66,11 @@ const removeListener = async () => {
   await chrome.storage.local.set({createSelector: false});
   console.log('Selector creation stopped')
   console.log('Removing overlay:', currentOverlay);
-  if (currentOverlay !== undefined) {
-    document.documentElement.removeChild(currentOverlay);
-    currentOverlay = undefined;
-    currentElement = undefined;
+  if (currentOverlay !== null) {
+    if (currentOverlay.parentElement !== null)
+      currentOverlay.parentElement.removeChild(currentOverlay);
+    currentOverlay = null;
+    currentElement = null;
   }
 }
 

@@ -10,7 +10,8 @@ import {Action} from "../shared/data.ts";
 // adding listener for messages from extension
 chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
   if (message as {action: Action, context: Record<string, unknown>} && message.action && message.context) {
-    const {action, context} = message;
+    const {action, context, tabId} = message;
+    console.log(`Received action: ${action.actionString}`);
     switch (action.actionString) {
       case 'ClickElement':
         sendResponse(clickElement(action, context));
@@ -25,11 +26,11 @@ chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
         break;
         
       case 'FindElementsBySelector':
-        sendResponse(findElementsBySelector(action, context));
+        sendResponse(findElementsBySelector(action, context, tabId));
         break;
         
       case 'FindElementBySelector':
-        sendResponse(findElementBySelector(action, context));
+        sendResponse(findElementBySelector(action, context, tabId));
         break;
     }
   }
