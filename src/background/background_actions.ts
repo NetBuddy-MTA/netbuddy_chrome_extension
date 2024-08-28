@@ -214,10 +214,10 @@ export async function contentScriptAction(action: Action, context: Record<string
     tabId = tab.id as number;
   }
   // send the message to the content script of the tab
-  const {modifiedContext, ...result} = await chrome.tabs.sendMessage(tabId, {action, context, tabId});
+  const {actionLogs, actionOutputs, ...rest} = await chrome.tabs.sendMessage(tabId, {action, context, tabId});
   // get all the outputs from the result and save them to the context
-  action.outputs.forEach(value => context[value.name] = modifiedContext[value.name]);
+  action.outputs.forEach(value => context[value.name] = actionOutputs[value.name]);
   
-  return result;
+  return {actionLogs, actionOutputs, rest};
 }
 
