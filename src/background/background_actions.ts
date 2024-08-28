@@ -54,6 +54,7 @@ export async function createTab(action: Action, context: Record<string, unknown>
   }
   // create the tab
   const tab = await chrome.tabs.create({windowId: window.id, url});
+  while (tab.status !== 'complete'); // wait for tab to load
   // get the tab output variable if exists in context
   const tabOutput = action.outputs.find(value => value.originalName === 'Tab');
   // store the tab in the context
@@ -260,12 +261,26 @@ export async function contentScriptAction(action: Action, context: Record<string
   // get the tab input variable if exists in context
   const tabInput = action.inputs.find(value => value.originalName === 'Tab');
   let tab: undefined | Tab;
-  // get the tab from the context
-  if (tabInput) tab = context[tabInput.name] as Tab;
+  // get the element input variable if exists in context
+  const elementInput = action.inputs.find(value => value.originalName.startsWith('Element'));
+  let tabId: number;
+  if (tabInput) {
+    tab = context[tabInput.name] as Tab;
+    tabId = tab.id as number;
+  }
+  // if there is an element in the context use the label to find the tab
+  else if (elementInput) {
+    const elementLabel = context[elementInput.name] as string;
+    const [idStr] = elementLabel.split('_');
+    tabId = parseInt(idStr);
+  }
   // or the active tab
-  else [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+  else {
+    [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+    tabId = tab.id as number;
+  }
   // send the message to the content script of the tab
-  const {modifiedContext, ...result} = await chrome.tabs.sendMessage(tab.id as number, {action, context});
+  const {modifiedContext, ...result} = await chrome.tabs.sendMessage(tabId, {action, context, tabId});
   // get all the outputs from the result and save them to the context
   action.outputs.forEach(value => context[value.name] = modifiedContext[value.name]);
   

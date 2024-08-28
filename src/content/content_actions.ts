@@ -1,6 +1,9 @@
 // Press the parameter element
 import {Action, Variable} from "../shared/data.ts";
-import {createUniqueElementLabel} from "./utils.ts";
+
+function createUniqueElementLabel() {
+  return `NetBuddy-Element-Label-${crypto.randomUUID()}`
+}
 
 function CreateEmptyResult(): {actionLogs: {key: string, value: string}[], actionOutputs: Map<Variable, unknown>} {
   return {actionLogs: [], actionOutputs: new Map()};
@@ -113,7 +116,7 @@ export function writeElementText(action: Action, context: Record<string, unknown
 }
 
 // Get the elements that matches the query string
-export function findElementsBySelector(action: Action, context: Record<string, unknown>) {
+export function findElementsBySelector(action: Action, context: Record<string, unknown>, tabId: number) {
   // initialize the action logs and outputs
   const {actionLogs, actionOutputs} = CreateEmptyResult();
   // find the selector input variable in the context
@@ -144,7 +147,7 @@ export function findElementsBySelector(action: Action, context: Record<string, u
   const countOutput = action.outputs.find(value => value.originalName === "Count");
   
   if (elementsOutput) {
-    actionOutputs.set(elementsOutput, label);
+    actionOutputs.set(elementsOutput, `${tabId}_${label}`);
     actionLogs.push({key: "Success", value: `${elements.length} Elements saved`})
   }
   else {
@@ -161,7 +164,7 @@ export function findElementsBySelector(action: Action, context: Record<string, u
 }
 
 // Get the first element that matches the query string
-export function findElementBySelector(action: Action, context: Record<string, unknown>) {
+export function findElementBySelector(action: Action, context: Record<string, unknown>, tabId: number) {
   // initialize the action logs and outputs
   const {actionLogs, actionOutputs} = CreateEmptyResult();
   // find the selector input variable in the context
@@ -177,9 +180,11 @@ export function findElementBySelector(action: Action, context: Record<string, un
 
   // get the matching elements
   const element = document.querySelector(selector);
+  console.log(`Element found: ${element}`);
 
   // get a unique label to track all found elements
   const label = createUniqueElementLabel();
+  console.log(`Element label: ${label}`);
   if (element)
     element.setAttribute(label, "");
   // todo: remove this in the future, for testing only
@@ -190,7 +195,7 @@ export function findElementBySelector(action: Action, context: Record<string, un
   const elementOutput = action.outputs.find(value => value.originalName === "Element");
 
   if (elementOutput) {
-    actionOutputs.set(elementOutput, label);
+    actionOutputs.set(elementOutput, `${tabId}_${label}`);
     actionLogs.push({key: "Success", value: "Element saved"})
   }
   else {
