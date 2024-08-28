@@ -34,6 +34,7 @@ chrome.runtime.onMessage.addListener(async (message, _sender, sendResponse) => {
         break;
     }
   }
+  else sendResponse(message);
 });
 
 
