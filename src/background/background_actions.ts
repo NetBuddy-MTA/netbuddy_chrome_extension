@@ -52,8 +52,8 @@ export async function createTab(action: Action, context: Record<string, unknown>
     actionLogs.push({key: "Info", value: `Navigating to ${url}`})
   }
   // create the tab
-  const tab = await chrome.tabs.create({windowId: window.id, url});
-  while (tab.status !== 'complete'); // wait for tab to load
+  let tab = await chrome.tabs.create({windowId: window.id, url});
+  while (tab.status !== 'complete') tab = await chrome.tabs.get(tab.id!)// wait for tab to load
   // get the tab output variable if exists in context
   const tabOutput = action.outputs.find(value => value.originalName === 'Tab');
   // store the tab in the context
