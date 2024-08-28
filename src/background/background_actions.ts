@@ -49,7 +49,6 @@ export async function createTab(action: Action, context: Record<string, unknown>
     // get the url from the context
     const urlParam = context[urlInput.name];
     url = urlParam as string;
-    if (url[0] === "\"") url = url.slice(1, -1);
     actionLogs.push({key: "Info", value: `Navigating to ${url}`})
   }
   // create the tab
@@ -94,8 +93,7 @@ export async function navigateToURL(action: Action, context: Record<string, unkn
     return {actionLogs, actionOutputs};
   }
   // get the url from the context
-  let url = context[urlInput.name] as string;
-  if (url[0] === "\"") url = url.slice(1, -1);
+  const url = context[urlInput.name] as string;
   actionLogs.push({key: "Info", value: `Navigating to ${url}`})
   
   const result = await chrome.tabs.update(tab.id, {url});

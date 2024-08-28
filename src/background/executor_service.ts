@@ -116,7 +116,11 @@ const runSequence = async () => {
     if (sequence) {
       // create a new context for the sequence
       const context = pipeline.context;
-      
+      // preprocess
+      for (const name of Object.keys(context)) {
+        const value = context[name];
+        context[name] = JSON.parse(value as string);
+      }
       // execute each action in the sequence
       for (const action of sequence.actions) {
         console.log(`Running ${action.actionString} action:`);
