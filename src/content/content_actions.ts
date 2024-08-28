@@ -17,7 +17,7 @@ export function clickElement(action: Action, context: Record<string, unknown>) {
   const elementInput = action.inputs.find(value => value.originalName === 'Element');
   if (elementInput) {
     // get the element label from the context
-    const elementLabel = context[elementInput.name] as string;
+    const elementLabel = (context[elementInput.name] as string).split('_')[1];
     // get the element from the dom
     const element = document.querySelector(`[${elementLabel}]`);
     // click the element
@@ -42,7 +42,7 @@ export function readElementText(action: Action, context: Record<string, unknown>
   const elementLabelInput = action.inputs.find(value => value.originalName === 'Element');
   if (elementLabelInput) {
     // get the element from the context
-    const elementLabel = context[elementLabelInput.name] as string;
+    const elementLabel = (context[elementLabelInput.name] as string).split('_')[1];
     // get the element from the dom
     const element = document.querySelector(`[${elementLabel}]`);
     if (!element) {
@@ -88,7 +88,7 @@ export function writeElementText(action: Action, context: Record<string, unknown
   }
   
   // get the element label from the context
-  const elementLabel = context[elementInput.name] as string;
+  const elementLabel = (context[elementInput.name] as string).split('_')[1];
   // get the element from the dom
   const element = document.querySelector(`[${elementLabel}]`);
   // get the text from the context
