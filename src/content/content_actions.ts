@@ -126,7 +126,7 @@ export function findElementsBySelector(action: Action, context: Record<string, u
   }
   
   // get the selector from the context
-  const selector = JSON.parse(context[selectorInput.name] as string) as string;
+  const selector = context[selectorInput.name] as string;
   
   // get the matching elements
   const elements = document.querySelectorAll(selector);
@@ -174,7 +174,7 @@ export function findElementBySelector(action: Action, context: Record<string, un
   }
 
   // get the selector from the context
-  const selector = JSON.parse(context[selectorInput.name] as string) as string;
+  const selector = context[selectorInput.name] as string;
 
   // get the matching elements
   const element = document.querySelector(selector);
