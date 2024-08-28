@@ -145,7 +145,7 @@ export function findElementsBySelector(action: Action, context: Record<string, u
   const countOutput = action.outputs.find(value => value.originalName === "Count");
   
   if (elementsOutput) {
-    actionOutputs.set(elementsOutput, `${tabId}_${label}`);
+    actionOutputs[elementsOutput.name] = `${tabId}_${label}`;
     actionLogs.push({key: "Success", value: `${elements.length} Elements saved`})
   }
   else {
@@ -153,7 +153,7 @@ export function findElementsBySelector(action: Action, context: Record<string, u
   }
   
   if (countOutput) {
-    actionOutputs.set(countOutput, elements.length);
+    actionOutputs[countOutput.name] = elements.length;
   } else {
     actionLogs.push({key: "Warning", value: "Count output variable isn't defined!"})
   }
@@ -178,11 +178,9 @@ export function findElementBySelector(action: Action, context: Record<string, un
 
   // get the matching elements
   const element = document.querySelector(selector);
-  console.log(`Element found: ${element}`);
 
   // get a unique label to track all found elements
   const label = createUniqueElementLabel();
-  console.log(`Element label: ${label}`);
   if (element)
     element.setAttribute(label, "");
   // todo: remove this in the future, for testing only
@@ -193,7 +191,7 @@ export function findElementBySelector(action: Action, context: Record<string, un
   const elementOutput = action.outputs.find(value => value.originalName === "Element");
 
   if (elementOutput) {
-    actionOutputs.set(elementOutput, `${tabId}_${label}`);
+    actionOutputs[elementOutput.name] = `${tabId}_${label}`;
     actionLogs.push({key: "Success", value: "Element saved"})
   }
   else {
