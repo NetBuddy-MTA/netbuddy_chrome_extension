@@ -37,6 +37,10 @@
     "service_worker": "background.js",
     "type": "module"
   },
+  
+  "externally_connectable": {
+    "matches": ["https://localhost:5173/*"]
+  },
 
   "permissions": [
     "scripting",
