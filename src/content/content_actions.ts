@@ -1,12 +1,12 @@
 // Press the parameter element
-import {Action, Variable} from "../shared/data.ts";
+import {Action} from "../shared/data.ts";
 
 function createUniqueElementLabel() {
   return `NetBuddy-Element-Label-${crypto.randomUUID()}`
 }
 
-function CreateEmptyResult(): {actionLogs: {key: string, value: string}[], actionOutputs: Map<Variable, unknown>} {
-  return {actionLogs: [], actionOutputs: new Map()};
+function CreateEmptyResult(): {actionLogs: {key: string, value: string}[], actionOutputs: Record<string, unknown>} {
+  return {actionLogs: [], actionOutputs: {}};
 }
 
 export function clickElement(action: Action, context: Record<string, unknown>) {
