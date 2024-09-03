@@ -190,6 +190,46 @@ export async function httpRequest(action: Action,  context: Record<string, unkno
   return {actionLogs, actionOutputs};
 }
 
+// subtracts 2 numbers
+export function subtractNumbersAction(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
+  // find the input number to subtract from
+  const subtractFromInput = action.inputs.find(value => value.originalName === "Subtract From");
+  // find the input number to subtract 
+  const subtractInput = action.inputs.find(value => value.originalName === "To Subtract");
+  
+  if (!subtractFromInput) {
+    actionLogs.push({key: "Error", value: "Subtract From input is undefined!"});
+    return {actionLogs, actionOutputs, fatal: true};
+  }
+  
+  if (!subtractInput) {
+    actionLogs.push({key: "Error", value: "To Subtract input is undefined!"});
+    return {actionLogs, actionOutputs, fatal: true};
+  }
+  
+  const subtractFrom = context[subtractFromInput.name] as number;
+  const toSubtract = context[subtractInput.name] as number;
+  
+  const result = subtractFrom - toSubtract;
+  
+  // find the result output variable
+  const resultOutput = action.outputs.find(value => value.originalName === "Result");
+  
+  if (resultOutput) {
+    context[resultOutput.name] = result;
+    actionOutputs[resultOutput.name] = JSON.stringify(result);
+    actionLogs.push({key: "Success", value: "Result was saved to output"})
+  }
+  else {
+    actionLogs.push({key: "Warning", value: "Result output is undefined!"});
+  }
+  
+  return {actionLogs, actionOutputs};
+} 
+
 // sends a message to the content script of a tab and returns the result
 export async function contentScriptAction(action: Action, context: Record<string, unknown>) {
   // get the tab input variable if exists in context

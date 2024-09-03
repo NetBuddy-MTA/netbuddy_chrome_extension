@@ -5,7 +5,7 @@ import {
   createTab,
   createWindow,
   httpRequest,
-  navigateToURL
+  navigateToURL, subtractNumbersAction
 } from "./background_actions.ts";
 import {InitSequenceAlarm} from "./utils.ts";
 import {menuItems} from "./context_menu_items.ts";
@@ -63,13 +63,9 @@ async function executeAction(action: Action, context: Record<string, unknown>) {
       result = await httpRequest(action, context);
       break;
       
-    // case "FindElementBySelector":
-    //   result = await findElementBySelector(action, context);
-    //   break;
-    //    
-    // case "FindElementsBySelector":
-    //   result = await findElementsBySelector(action, context);
-    //   break;
+    case "Subtract":
+      result = subtractNumbersAction(action, context);
+      break;
       
     // for all content script actions
     default:
