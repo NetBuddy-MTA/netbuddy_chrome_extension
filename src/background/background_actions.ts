@@ -1,9 +1,9 @@
 // keep alive
-import {Action, Variable} from "../shared/data.ts";
+import {Action} from "../shared/data.ts";
 import Tab = chrome.tabs.Tab;
 
-function CreateEmptyResult(): {actionLogs: {key: string, value: string}[], actionOutputs: Map<Variable, unknown>} {
-  return {actionLogs: [], actionOutputs: new Map()};
+function CreateEmptyResult(): {actionLogs: {key: string, value: string}[], actionOutputs: Record<string, string>} {
+  return {actionLogs: [], actionOutputs: {}};
 }
 
 // creates a new chrome window and returns the window object
@@ -19,7 +19,7 @@ export async function createWindow(action: Action, context: Record<string, unkno
   // store the window in the context
   if (windowOutput) {
     context[windowOutput.name] = window;
-    actionOutputs.set(windowOutput, window);
+    actionOutputs[windowOutput.name] = JSON.stringify(window);
   }
   else {
     actionLogs.push({key: "Warning", value: "Window output not defined!"});
@@ -59,7 +59,7 @@ export async function createTab(action: Action, context: Record<string, unknown>
   // store the tab in the context
   if (tabOutput) {
     context[tabOutput.name] = tab;
-    actionOutputs.set(tabOutput, tab);
+    actionOutputs[tabOutput.name] = JSON.stringify(tab);
   }
   else {
     // todo: make sure this is necessary, tab might not need to be re-stored after changing url, needs more testing
@@ -103,7 +103,7 @@ export async function navigateToURL(action: Action, context: Record<string, unkn
   // store the tab in the context
   if (tabOutput) {
     context[tabOutput.name] = result;
-    actionOutputs.set(tabOutput, result);
+    actionOutputs[tabOutput.name] = JSON.stringify(result);
   }
   else {
     // todo: make sure this is necessary, tab might not need to be re-stored after changing url, needs more testing
@@ -180,7 +180,7 @@ export async function httpRequest(action: Action,  context: Record<string, unkno
   const responseOutput = action.outputs.find(value => value.originalName === 'Response');
   if (responseOutput) {
     context[responseOutput.name] = response;
-    actionOutputs.set(responseOutput, response);
+    actionOutputs[responseOutput.name] = JSON.stringify(response);
     actionLogs.push({key: "Success", value: "Response saved to output variable"});
   } 
   else {

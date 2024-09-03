@@ -30,9 +30,9 @@ export type ActionResult = {
   action: Action;
   startAt: Date;
   endAt: Date;
-  actionContext: Map<Variable, unknown>;
+  actionContext: Record<string, string>;
   actionLogs: {key: string, value: string}[];
-  actionOutputs: Map<Variable, unknown>;
+  actionOutputs: Record<string, string>;
   fatal?: boolean;
 };
 

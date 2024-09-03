@@ -5,7 +5,7 @@ function createUniqueElementLabel() {
   return `NetBuddy-Element-Label-${crypto.randomUUID()}`
 }
 
-function CreateEmptyResult(): {actionLogs: {key: string, value: string}[], actionOutputs: Record<string, unknown>} {
+function CreateEmptyResult(): {actionLogs: {key: string, value: string}[], actionOutputs: Record<string, string>} {
   return {actionLogs: [], actionOutputs: {}};
 }
 
@@ -100,7 +100,7 @@ export function writeElementText(action: Action, context: Record<string, unknown
     // get the result output variable in the context
     const isInputOutput = action.outputs.find(value => value.originalName === 'Is Input');
     if (isInputOutput) {
-      actionOutputs[isInputOutput.name] = isInputElement;
+      actionOutputs[isInputOutput.name] = JSON.stringify(isInputElement);
     }
     else {
       actionLogs.push({key: 'Warning', value: 'Is Input variable not defined!'});
@@ -153,7 +153,7 @@ export function findElementsBySelector(action: Action, context: Record<string, u
   }
   
   if (countOutput) {
-    actionOutputs[countOutput.name] = elements.length;
+    actionOutputs[countOutput.name] = JSON.stringify(elements.length);
   } else {
     actionLogs.push({key: "Warning", value: "Count output variable isn't defined!"})
   }

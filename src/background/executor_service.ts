@@ -1,4 +1,4 @@
-import {Action, ActionResult, SequenceResult, Variable} from "../shared/data.ts"
+import {Action, ActionResult, SequenceResult} from "../shared/data.ts"
 import {
   closeWindow,
   contentScriptAction,
@@ -35,8 +35,8 @@ async function executeAction(action: Action, context: Record<string, unknown>) {
   });
   
   // create the context for the result
-  const actionContext: Map<Variable, unknown> = new Map();
-  action.inputs.forEach(input => actionContext.set(input, context[input.name]));
+  const actionContext: Record<string, string> = {};
+  action.inputs.forEach(input => actionContext[input.name] = JSON.stringify(context[input.name]));
   
   // initialize the action logs and outputs
   const startAt = new Date();
@@ -97,6 +97,7 @@ const runSequence = async () => {
   const pipeline: Pipeline = await response.json();
   console.log("got pipeline from runQueue successfully!");
   console.log(pipeline);
+
   // initialize the sequence result object
   const sequenceResult: SequenceResult = {
     id: pipeline.id,
@@ -136,7 +137,10 @@ const runSequence = async () => {
     // send the sequence result to the server
     sequenceResult.endAt = new Date();
     response = await SaveRunResult(sequenceResult);
-    if (!response.ok) console.log("failed to save sequence result");
+    if (!response.ok) {
+      console.log("failed to save sequence result");
+      console.log(response);
+    }
   }
 }
 
