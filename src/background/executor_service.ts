@@ -5,7 +5,7 @@ import {
   contentScriptAction,
   createTab,
   createWindow,
-  httpRequest,
+  httpRequest, multiplyNumbersAction,
   navigateToURL, subtractNumbersAction
 } from "./background_actions.ts";
 import {InitSequenceAlarm} from "./utils.ts";
@@ -67,7 +67,15 @@ async function executeAction(action: Action, context: Record<string, unknown>) {
     case "Subtract":
       result = subtractNumbersAction(action, context);
       break;
+      
+    case "Multiply":
+      result = multiplyNumbersAction(action, context);
+      break;
 
+    case "Divide":
+      result = multiplyNumbersAction(action, context);
+      break;
+      
     case "Addition":
       result = additionNumbersAction(action, context);
       break; 
