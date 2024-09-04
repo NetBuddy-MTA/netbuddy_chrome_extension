@@ -1,5 +1,6 @@
 import {Action, ActionResult, SequenceResult} from "../shared/data.ts"
 import {
+  additionNumbersAction,
   closeWindow,
   contentScriptAction,
   createTab,
@@ -66,7 +67,10 @@ async function executeAction(action: Action, context: Record<string, unknown>) {
     case "Subtract":
       result = subtractNumbersAction(action, context);
       break;
-      
+
+    case "Addition":
+      result = additionNumbersAction(action, context);
+      break; 
     // for all content script actions
     default:
       result = await contentScriptAction(action, context);
