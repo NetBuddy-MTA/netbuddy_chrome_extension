@@ -230,6 +230,46 @@ export function subtractNumbersAction(action: Action, context: Record<string, un
   return {actionLogs, actionOutputs};
 }
 
+// Multiplies 2 numbers
+export function multiplyNumbersAction(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+
+  // find the first input number to add from
+  const multiplier = action.inputs.find(value => value.originalName === "Multiplier");
+  // find the second input number to add from
+  const multiplicand = action.inputs.find(value => value.originalName === "Multiplicand");
+
+  if (!multiplier) {
+    actionLogs.push({key: "Error", value: "The multiplier number is undefined!"});
+    return {actionLogs, actionOutputs, fatal: true};
+  }
+
+  if (!multiplicand) {
+    actionLogs.push({key: "Error", value: "The Multiplicand number is undefined!"});
+    return {actionLogs, actionOutputs, fatal: true};
+  }
+
+  const multiplierNumber = context[multiplier.name] as number;
+  const multiplicandNumber = context[multiplicand.name] as number;
+
+  const result = multiplierNumber * multiplicandNumber;
+
+  // find the result output variable
+  const resultOutput = action.outputs.find(value => value.originalName === "Result");
+
+  if (resultOutput) {
+    context[resultOutput.name] = result;
+    actionOutputs[resultOutput.name] = JSON.stringify(result);
+    actionLogs.push({key: "Success", value: "Result was saved to output"})
+  }
+  else {
+    actionLogs.push({key: "Warning", value: "Result output is undefined!"});
+  }
+
+  return {actionLogs, actionOutputs};
+}
+
 // Addition of 2 numbers
 export function additionNumbersAction(action: Action, context: Record<string, unknown>) {
   // initialize the action logs and outputs
@@ -237,7 +277,7 @@ export function additionNumbersAction(action: Action, context: Record<string, un
 
   // find the first input number to add from
   const firstAddend = action.inputs.find(value => value.originalName === "First Addend");
-  // find the input number to subtract 
+  // find the second input number to add from
   const secondAddend = action.inputs.find(value => value.originalName === "Second Addend");
 
   if (!firstAddend) {
