@@ -235,9 +235,9 @@ export function multiplyNumbersAction(action: Action, context: Record<string, un
   // initialize the action logs and outputs
   const {actionLogs, actionOutputs} = CreateEmptyResult();
 
-  // find the first input number to add from
+  // find the multiplier number
   const multiplier = action.inputs.find(value => value.originalName === "Multiplier");
-  // find the second input number to add from
+  // find the multiplicand number
   const multiplicand = action.inputs.find(value => value.originalName === "Multiplicand");
 
   if (!multiplier) {
@@ -254,6 +254,46 @@ export function multiplyNumbersAction(action: Action, context: Record<string, un
   const multiplicandNumber = context[multiplicand.name] as number;
 
   const result = multiplierNumber * multiplicandNumber;
+
+  // find the result output variable
+  const resultOutput = action.outputs.find(value => value.originalName === "Result");
+
+  if (resultOutput) {
+    context[resultOutput.name] = result;
+    actionOutputs[resultOutput.name] = JSON.stringify(result);
+    actionLogs.push({key: "Success", value: "Result was saved to output"})
+  }
+  else {
+    actionLogs.push({key: "Warning", value: "Result output is undefined!"});
+  }
+
+  return {actionLogs, actionOutputs};
+}
+
+// Divide 2 numbers
+export function diviveNumbersAction(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+
+  // find the dividend number
+  const dividend = action.inputs.find(value => value.originalName === "Dividend");
+  // find the divisor number
+  const divisor = action.inputs.find(value => value.originalName === "Divisior");
+
+  if (!dividend) {
+    actionLogs.push({key: "Error", value: "The devidend number is undefined!"});
+    return {actionLogs, actionOutputs, fatal: true};
+  }
+
+  if (!divisor) {
+    actionLogs.push({key: "Error", value: "The divisor number is undefined!"});
+    return {actionLogs, actionOutputs, fatal: true};
+  }
+
+  const dividendNumber = context[dividend.name] as number;
+  const divisorNumber = context[divisor.name] as number;
+
+  const result = dividendNumber / divisorNumber;
 
   // find the result output variable
   const resultOutput = action.outputs.find(value => value.originalName === "Result");
