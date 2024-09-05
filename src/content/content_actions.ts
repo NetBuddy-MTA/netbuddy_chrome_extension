@@ -54,7 +54,7 @@ export function readElementText(action: Action, context: Record<string, unknown>
     // get the text output variable in the context
     const textOutput = action.outputs.find(value => value.originalName === 'Element Text');
     if (textOutput) {
-      actionOutputs[textOutput.name] = content;
+      actionOutputs[textOutput.name] = JSON.stringify(content);
     } 
     else {
       actionLogs.push({key: 'Warning', value: 'Element Text variable not defined!'});
@@ -145,7 +145,7 @@ export function findElementsBySelector(action: Action, context: Record<string, u
   const countOutput = action.outputs.find(value => value.originalName === "Count");
   
   if (elementsOutput) {
-    actionOutputs[elementsOutput.name] = `${tabId}_${label}`;
+    actionOutputs[elementsOutput.name] = JSON.stringify(`${tabId}_${label}`);
     actionLogs.push({key: "Success", value: `${elements.length} Elements saved`})
   }
   else {
@@ -191,7 +191,7 @@ export function findElementBySelector(action: Action, context: Record<string, un
   const elementOutput = action.outputs.find(value => value.originalName === "Element");
 
   if (elementOutput) {
-    actionOutputs[elementOutput.name] = `${tabId}_${label}`;
+    actionOutputs[elementOutput.name] = JSON.stringify(`${tabId}_${label}`);
     actionLogs.push({key: "Success", value: "Element saved"})
   }
   else {
