@@ -6,6 +6,10 @@ function CreateEmptyResult(): {actionLogs: {key: string, value: string}[], actio
   return {actionLogs: [], actionOutputs: {}};
 }
 
+function delay(milliseconds: number) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
 // creates a new chrome window and returns the window object
 export async function createWindow(action: Action, context: Record<string, unknown>) {
   // initialize the action logs and outputs
@@ -350,6 +354,48 @@ export function additionNumbersAction(action: Action, context: Record<string, un
   return {actionLogs, actionOutputs};
 }
 
+// waits for a number of milliseconds before continuing
+export async function waitForMillisecondsAction(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
+  // get the number of milliseconds variable
+  const millisecondsInput = action.inputs.find(value => value.originalName === "Milliseconds");
+  
+  if (!millisecondsInput) {
+    actionLogs.push({key: "Warning", value: "Milliseconds input undefined! will not wait."})
+    return {actionLogs, actionOutputs};
+  }
+  
+  const milliseconds = context[millisecondsInput.name] as number
+  
+  actionLogs.push({key: "Success", value: `Waiting for ${milliseconds} ms`});
+  await delay(milliseconds);
+  
+  return {actionLogs, actionOutputs};
+}
+
+// waits for a tab to load
+export async function waitForTabToLoad(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+
+  // get the tab variable
+  const tabInput = action.inputs.find(value => value.originalName === "Tab");
+  
+  if (!tabInput) {
+    actionLogs.push({key: "Warning", value: "Tab input undefined! will not wait."})
+    return {actionLogs, actionOutputs};
+  }
+  
+  let tab = context[tabInput.name] as chrome.tabs.Tab;
+  
+  actionLogs.push({key: "Success", value: `Waiting for tab ${tab.id} to load.`});
+  while (tab.status !== 'complete') tab = await chrome.tabs.get(tab.id!) // wait for tab to load
+  
+  return {actionLogs, actionOutputs};
+}
+
 // sends a message to the content script of a tab and returns the result
 export async function contentScriptAction(action: Action, context: Record<string, unknown>) {
   // get the tab input variable if exists in context
@@ -374,6 +420,8 @@ export async function contentScriptAction(action: Action, context: Record<string
     tabId = tab.id as number;
   }
   // send the message to the content script of the tab
+  tab = await chrome.tabs.get(tabId);
+  while (tab.status !== 'complete') tab = await chrome.tabs.get(tabId)// wait for tab to load
   const {actionLogs, actionOutputs, ...rest} = await chrome.tabs.sendMessage(tabId, {action, context, tabId});
   // get all the outputs from the result and save them to the context
   action.outputs.forEach(value => context[value.name] = JSON.parse(actionOutputs[value.name]));
