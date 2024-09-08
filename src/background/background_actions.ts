@@ -500,6 +500,103 @@ export function parseURLAction(action: Action, context: Record<string, unknown>)
   return {actionLogs, actionOutputs};
 }
 
+// not gate
+export function booleanNotAction(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
+  // get the input
+  const boolInput = action.inputs.find(value => value.originalName === "In");
+  
+  if (boolInput) {
+    const ourIn = context[boolInput.name] as boolean;
+    const inverted = !ourIn;
+    actionLogs.push({key: "Success", value: `Inverted the input to ${inverted}`});
+    
+    // get the output
+    const boolOutput = action.outputs.find(value => value.originalName === "Out");
+    if (!boolOutput) {
+      actionLogs.push({key: "Warning", value: "Output is not defined!"});
+      return {actionLogs, actionOutputs};
+    }
+    
+    context[boolOutput.name] = inverted;
+    actionOutputs[boolOutput.name] = JSON.stringify(inverted);
+    
+    return {actionLogs, actionOutputs};
+  }
+  else {
+    actionLogs.push({key: "Error", value: "The input variable is undefined!"});
+    return {actionLogs, actionOutputs};
+  }
+}
+
+// and gate
+export function booleanAndAction(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+
+  // get the input
+  const bool1Input = action.inputs.find(value => value.originalName === "In 1");
+  const bool2Input = action.inputs.find(value => value.originalName === "In 2");
+
+  if (!(bool1Input && bool2Input)) {
+    actionLogs.push({key: "Error", value: "Not all inputs are defined!"});
+    return {actionLogs, actionOutputs};
+  }
+  
+  const in1 = context[bool1Input.name] as boolean;
+  const in2 = context[bool2Input.name] as boolean;
+  const result = in1 && in2;
+
+  actionLogs.push({key: "Success", value: `The result is ${result}`});
+  
+  // find the output
+  const resultOutput = action.outputs.find(value => value.originalName === "Out");
+  if (!resultOutput) {
+    actionLogs.push({key: "Warning", value: "The result output variable is undefined!"});
+    return {actionLogs, actionOutputs};
+  }
+  
+  context[resultOutput.name] = result;
+  actionOutputs[resultOutput.name] = JSON.stringify(result);
+  
+  return {actionLogs, actionOutputs};
+}
+
+// or gate
+export function booleanOrAction(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+
+  // get the input
+  const bool1Input = action.inputs.find(value => value.originalName === "In 1");
+  const bool2Input = action.inputs.find(value => value.originalName === "In 2");
+
+  if (!(bool1Input && bool2Input)) {
+    actionLogs.push({key: "Error", value: "Not all inputs are defined!"});
+    return {actionLogs, actionOutputs};
+  }
+
+  const in1 = context[bool1Input.name] as boolean;
+  const in2 = context[bool2Input.name] as boolean;
+  const result = in1 || in2;
+
+  actionLogs.push({key: "Success", value: `The result is ${result}`});
+
+  // find the output
+  const resultOutput = action.outputs.find(value => value.originalName === "Out");
+  if (!resultOutput) {
+    actionLogs.push({key: "Warning", value: "The result output variable is undefined!"});
+    return {actionLogs, actionOutputs};
+  }
+
+  context[resultOutput.name] = result;
+  actionOutputs[resultOutput.name] = JSON.stringify(result);
+
+  return {actionLogs, actionOutputs};
+}
+
 // sends a message to the content script of a tab and returns the result
 export async function contentScriptAction(action: Action, context: Record<string, unknown>) {
   // get the tab input variable if exists in context

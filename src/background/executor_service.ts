@@ -1,6 +1,6 @@
 import {Action, ActionResult, SequenceResult} from "../shared/data.ts"
 import {
-  additionNumbersAction,
+  additionNumbersAction, booleanAndAction, booleanNotAction, booleanOrAction,
   closeWindow,
   contentScriptAction,
   createTab,
@@ -94,6 +94,18 @@ async function executeAction(action: Action, context: Record<string, unknown>) {
       
     case "ParseURL":
       result = parseURLAction(action, context);
+      break;
+      
+    case "BooleanNot":
+      result = booleanNotAction(action, context);
+      break;
+      
+    case "BooleanAnd":
+      result = booleanAndAction(action, context);
+      break;
+      
+    case "BooleanOr":
+      result = booleanOrAction(action, context);
       break;
       
     // for all content script actions
