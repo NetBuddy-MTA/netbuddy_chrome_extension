@@ -396,6 +396,54 @@ export async function waitForTabToLoad(action: Action, context: Record<string, u
   return {actionLogs, actionOutputs};
 }
 
+export function parseNumberAction(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
+  // get the number string variable
+  const stringInput = action.inputs.find(value => value.originalName === "Number String");
+  
+  if (!stringInput) {
+    actionLogs.push({key: "Error", value: "Number String input undefined!"});
+    return {actionLogs, actionOutputs};
+  }
+  
+  // get the variable value
+  const stringVariable = context[stringInput.name] as string;
+  // convert to number
+  const convertedValue = parseFloat(stringVariable);
+  const convertedSuccessfully = !isNaN(convertedValue) && isFinite(convertedValue);
+
+  if (convertedSuccessfully) {
+    actionLogs.push({key: "Success", value: `The string was converted to the number ${convertedValue}.`});
+  }
+  else {
+    actionLogs.push({key: "Warning", value: "The string was not converted to a number."});
+  }
+  
+  // get the output variables to save the results in
+  const numberOutput = action.outputs.find(value => value.originalName === "Number");
+  const convertedOutput = action.outputs.find(value => value.originalName === "Converted Successfully");
+  
+  if (numberOutput) {
+    context[numberOutput.name] = convertedOutput;
+    actionOutputs[numberOutput.name] = JSON.stringify(convertedOutput);
+  }
+  else {
+    actionLogs.push({key: "Warning", value: "The Number output variable is not defined!"});
+  }
+  
+  if (convertedOutput) {
+    context[convertedOutput.name] = convertedSuccessfully;
+    actionOutputs[convertedOutput.name] = JSON.stringify(convertedSuccessfully);
+  }
+  else {
+    actionLogs.push({key: "Warning", value: "The Converted Successfully output variable is not defined!"});
+  }
+  
+  return {actionLogs, actionOutputs};
+}
+
 // sends a message to the content script of a tab and returns the result
 export async function contentScriptAction(action: Action, context: Record<string, unknown>) {
   // get the tab input variable if exists in context

@@ -185,7 +185,7 @@ export function findElementBySelector(action: Action, context: Record<string, un
     element.setAttribute(label, "");
   // todo: remove this in the future, for testing only
   // change the element border color to red
-  (<HTMLElement>element).style.border = '3px solid red';
+  // (<HTMLElement>element).style.border = '3px solid red';
 
   // find the output variables
   const elementOutput = action.outputs.find(value => value.originalName === "Element");
