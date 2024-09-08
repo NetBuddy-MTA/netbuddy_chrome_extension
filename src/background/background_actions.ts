@@ -426,8 +426,8 @@ export function parseNumberAction(action: Action, context: Record<string, unknow
   const convertedOutput = action.outputs.find(value => value.originalName === "Converted Successfully");
   
   if (numberOutput) {
-    context[numberOutput.name] = convertedOutput;
-    actionOutputs[numberOutput.name] = JSON.stringify(convertedOutput);
+    context[numberOutput.name] = convertedValue;
+    actionOutputs[numberOutput.name] = JSON.stringify(convertedValue);
   }
   else {
     actionLogs.push({key: "Warning", value: "The Number output variable is not defined!"});
@@ -441,6 +441,60 @@ export function parseNumberAction(action: Action, context: Record<string, unknow
     actionLogs.push({key: "Warning", value: "The Converted Successfully output variable is not defined!"});
   }
   
+  return {actionLogs, actionOutputs};
+}
+
+export function parseURLAction(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+
+  // get the number string variable
+  const stringInput = action.inputs.find(value => value.originalName === "URL String");
+
+  if (!stringInput) {
+    actionLogs.push({key: "Error", value: "URL String input undefined!"});
+    return {actionLogs, actionOutputs};
+  }
+
+  // get the variable value
+  const stringVariable = context[stringInput.name] as string;
+  // convert to number
+  let convertedSuccessfully;
+  try {
+    new URL(stringVariable);
+    convertedSuccessfully = true;
+    
+  } catch (error) {
+    convertedSuccessfully = false;
+  }
+
+  if (convertedSuccessfully) {
+    actionLogs.push({key: "Success", value: `The string is a url.`});
+  }
+  else {
+    actionLogs.push({key: "Warning", value: "The string is not a url."});
+  }
+
+  // get the output variables to save the results in
+  const urlOutput = action.outputs.find(value => value.originalName === "URL");
+  const convertedOutput = action.outputs.find(value => value.originalName === "Converted Successfully");
+
+  if (urlOutput) {
+    context[urlOutput.name] = stringVariable;
+    actionOutputs[urlOutput.name] = JSON.stringify(stringVariable);
+  }
+  else {
+    actionLogs.push({key: "Warning", value: "The URL output variable is not defined!"});
+  }
+
+  if (convertedOutput) {
+    context[convertedOutput.name] = convertedSuccessfully;
+    actionOutputs[convertedOutput.name] = JSON.stringify(convertedSuccessfully);
+  }
+  else {
+    actionLogs.push({key: "Warning", value: "The Converted Successfully output variable is not defined!"});
+  }
+
   return {actionLogs, actionOutputs};
 }
 

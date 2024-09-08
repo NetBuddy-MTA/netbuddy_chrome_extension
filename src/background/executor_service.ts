@@ -6,7 +6,7 @@ import {
   createTab,
   createWindow,
   httpRequest, multiplyNumbersAction,
-  navigateToURL, parseNumberAction, subtractNumbersAction, waitForMillisecondsAction, waitForTabToLoad
+  navigateToURL, parseNumberAction, parseURLAction, subtractNumbersAction, waitForMillisecondsAction, waitForTabToLoad
 } from "./background_actions.ts";
 import {InitSequenceAlarm} from "./utils.ts";
 import {menuItems} from "./context_menu_items.ts";
@@ -90,6 +90,10 @@ async function executeAction(action: Action, context: Record<string, unknown>) {
       
     case "ParseNumber":
       result = parseNumberAction(action, context);
+      break;
+      
+    case "ParseURL":
+      result = parseURLAction(action, context);
       break;
       
     // for all content script actions
