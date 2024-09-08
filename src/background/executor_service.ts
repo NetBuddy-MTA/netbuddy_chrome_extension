@@ -148,12 +148,21 @@ const runSequence = async () => {
         context[name] = JSON.parse(value as string);
       }
       // execute each action in the sequence
-      for (const action of sequence.actions) {
-        console.log(`Running ${action.actionString} action:`);
-        const result = await executeAction(action, context);
-        // add action result to list of results in sequence result
-        sequenceResult.results.push(result);
-        console.log(result);
+      let index = 0;
+      while (index < sequence.actions.length) {
+        const action = sequence.actions[index];
+        console.log(`Processing ${action.actionString} action:`);
+        // set new index
+        if (shouldRunAction(action)) {
+          const result = await executeAction(action, context);
+          // add action result to list of results in sequence result
+          sequenceResult.results.push(result);
+          console.log(result);
+          index++;
+        }
+        else {
+          index += offsetIndex(action, context, sequence.actions.length);
+        }
       }
     }
     pipeline.isFinished = true;
@@ -167,6 +176,31 @@ const runSequence = async () => {
       console.log(response);
     }
   }
+}
+
+function shouldRunAction(action: Action) {
+  return action.actionString !== "Goto";
+}
+
+function offsetIndex(action: Action, context: Record<string, unknown>, jumpToEnd: number): number {
+  if (action.actionString === "Goto") {
+    // get the inputs
+    const offsetInput = action.inputs.find(value => value.originalName === "Number");
+    const conditionInput = action.inputs.find(value => value.originalName === "Condition");
+    
+    if (!offsetInput) return jumpToEnd;
+    
+    const offset = context[offsetInput.name] as number;
+    
+    if (conditionInput) {
+      const condition = context[conditionInput.name] as boolean;
+      if (condition) return offset;
+      return 1;
+    }
+    else 
+      return offset;
+  }
+  return 1;
 }
 
 // try to run a sequence from the run queue every roughly 4 seconds

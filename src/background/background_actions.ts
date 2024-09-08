@@ -396,6 +396,7 @@ export async function waitForTabToLoad(action: Action, context: Record<string, u
   return {actionLogs, actionOutputs};
 }
 
+// parse number from string
 export function parseNumberAction(action: Action, context: Record<string, unknown>) {
   // initialize the action logs and outputs
   const {actionLogs, actionOutputs} = CreateEmptyResult();
@@ -444,6 +445,7 @@ export function parseNumberAction(action: Action, context: Record<string, unknow
   return {actionLogs, actionOutputs};
 }
 
+// parse url from string
 export function parseURLAction(action: Action, context: Record<string, unknown>) {
   // initialize the action logs and outputs
   const {actionLogs, actionOutputs} = CreateEmptyResult();
