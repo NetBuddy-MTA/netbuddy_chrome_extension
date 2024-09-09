@@ -99,12 +99,17 @@ const getElementSelector = (element: Element | null): Selector | null => {
       acc[attr.name] = attr.name === "id";
       return acc;
     }, {} as { [key: string]: boolean });
+    const attributeFullMatch = attrs.reduce((acc, attr) => {
+      acc[attr.name] = true;
+      return acc;
+    }, {} as { [key: string]: boolean });
     
     selector.stages.unshift({
       tag,
       inUse: true,
       attributes,
-      useAttributes 
+      useAttributes,
+      attributeFullMatch
     });
   }
   

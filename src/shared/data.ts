@@ -48,5 +48,6 @@ export type SelectorStage = {
   tag: string;
   attributes: { [key: string]: string };
   useAttributes: { [key: string]: boolean };
+  attributeFullMatch: { [key: string]: boolean };
   inUse: boolean;
 };
