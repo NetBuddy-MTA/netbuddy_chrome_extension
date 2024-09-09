@@ -14,7 +14,7 @@ import {
   navigateToURL,
   numberLessThanAction,
   parseNumberAction,
-  parseURLAction,
+  parseURLAction, stringConcatenateAction,
   subtractNumbersAction,
   waitForMillisecondsAction,
   waitForTabToLoad
@@ -125,6 +125,10 @@ async function executeAction(action: Action, context: Record<string, unknown>) {
       
     case "NumberLessThan":
       result = numberLessThanAction(action, context);
+      break;
+      
+    case "StringConcatenate":
+      result = stringConcatenateAction(action, context);
       break;
       
     // for all content script actions
