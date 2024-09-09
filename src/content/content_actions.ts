@@ -133,6 +133,10 @@ export function findElementsBySelector(action: Action, context: Record<string, u
   
   // get a unique label to track all found elements
   const label = createUniqueElementLabel();
+  for (let i = 0; i < elements.length; i++) {
+    elements[i].setAttribute(label, "");
+    elements[i].setAttribute(`${label}_${i}`, "");
+  }
   elements.forEach(element => element.setAttribute(label, ""));
   // todo: remove this in the future, for testing only
   // change each element border color to red

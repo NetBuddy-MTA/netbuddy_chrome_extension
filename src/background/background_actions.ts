@@ -597,6 +597,45 @@ export function booleanOrAction(action: Action, context: Record<string, unknown>
   return {actionLogs, actionOutputs};
 }
 
+// get element from elements array
+export function elementArrayIndexingAction(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
+  // get the input variables
+  const arrayInput = action.inputs.find(value => value.originalName === "Array");
+  const indexInput = action.inputs.find(value => value.originalName === "Index");
+  
+  if (!arrayInput) {
+    actionLogs.push({key: "Error", value: "Array input variable is undefined!"});
+    return {actionLogs, actionOutputs};
+  }
+  
+  if (!indexInput) {
+    actionLogs.push({key: "Error", value: "Index input variable is undefined"});
+    return {actionLogs, actionOutputs};
+  }
+  
+  // get the values
+  const elementsLabel = context[arrayInput.name] as string;
+  const index = context[indexInput.name] as number;
+  const indexedElementLabel = `${elementsLabel}_${index}`;
+  actionLogs.push({key: "Success", value: `Generated indexed label: ${indexedElementLabel}`});
+  
+  // get the output variable
+  const elementOutput = action.outputs.find(value => value.originalName === "Element");
+  
+  if (!elementOutput) {
+    actionLogs.push({key: "Warning", value: "Element output variable is undefined!"});
+    return {actionLogs, actionOutputs};
+  }
+  
+  context[elementOutput.name] = elementOutput;
+  actionOutputs[elementOutput.name] = JSON.stringify(elementOutput);
+  
+  return {actionLogs, actionOutputs};
+}
+
 // sends a message to the content script of a tab and returns the result
 export async function contentScriptAction(action: Action, context: Record<string, unknown>) {
   // get the tab input variable if exists in context

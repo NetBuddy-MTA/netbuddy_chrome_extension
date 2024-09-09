@@ -4,7 +4,7 @@ import {
   closeWindow,
   contentScriptAction,
   createTab,
-  createWindow,
+  createWindow, elementArrayIndexingAction,
   httpRequest, multiplyNumbersAction,
   navigateToURL, parseNumberAction, parseURLAction, subtractNumbersAction, waitForMillisecondsAction, waitForTabToLoad
 } from "./background_actions.ts";
@@ -106,6 +106,10 @@ async function executeAction(action: Action, context: Record<string, unknown>) {
       
     case "BooleanOr":
       result = booleanOrAction(action, context);
+      break;
+      
+    case "GetElementFromArray":
+      result = elementArrayIndexingAction(action, context);
       break;
       
     // for all content script actions
