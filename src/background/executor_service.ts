@@ -1,12 +1,23 @@
 import {Action, ActionResult, SequenceResult} from "../shared/data.ts"
 import {
-  additionNumbersAction, booleanAndAction, booleanNotAction, booleanOrAction,
+  additionNumbersAction,
+  booleanAndAction,
+  booleanNotAction,
+  booleanOrAction,
   closeWindow,
   contentScriptAction,
   createTab,
-  createWindow, elementArrayIndexingAction,
-  httpRequest, multiplyNumbersAction,
-  navigateToURL, parseNumberAction, parseURLAction, subtractNumbersAction, waitForMillisecondsAction, waitForTabToLoad
+  createWindow,
+  elementArrayIndexingAction,
+  httpRequest,
+  multiplyNumbersAction,
+  navigateToURL,
+  numberLessThanAction,
+  parseNumberAction,
+  parseURLAction,
+  subtractNumbersAction,
+  waitForMillisecondsAction,
+  waitForTabToLoad
 } from "./background_actions.ts";
 import {InitSequenceAlarm} from "./utils.ts";
 import {menuItems} from "./context_menu_items.ts";
@@ -110,6 +121,10 @@ async function executeAction(action: Action, context: Record<string, unknown>) {
       
     case "GetElementFromArray":
       result = elementArrayIndexingAction(action, context);
+      break;
+      
+    case "NumberLessThan":
+      result = numberLessThanAction(action, context);
       break;
       
     // for all content script actions

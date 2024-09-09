@@ -636,6 +636,44 @@ export function elementArrayIndexingAction(action: Action, context: Record<strin
   return {actionLogs, actionOutputs};
 }
 
+// number less than
+export function numberLessThanAction(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
+  // get the inputs
+  const firstInput = action.inputs.find(value => value.originalName === "First");
+  const secondInput = action.inputs.find(value => value.originalName === "Second");
+  
+  if (!firstInput) {
+    actionLogs.push({key: "Error", value: "First number input is undefined!"});
+    return {actionLogs, actionOutputs};
+  }
+  
+  if (!secondInput) {
+    actionLogs.push({key: "Error", value: "Second number input is undefined!"});
+    return {actionLogs, actionOutputs};
+  }
+  
+  // get the values
+  const first = context[firstInput.name] as number;
+  const second = context[secondInput.name] as number;
+  const result = first < second;
+  
+  // get the output variable
+  const resultOutput = action.outputs.find(value => value.originalName === "Result");
+  
+  if (!resultOutput) {
+    actionLogs.push({key: "Error", value: "Result output is undefined!"});
+    return {actionLogs, actionOutputs};
+  }
+  
+  context[resultOutput.name] = result;
+  actionOutputs[resultOutput.name] = JSON.stringify(result);
+  
+  return {actionLogs, actionOutputs};
+}
+
 // sends a message to the content script of a tab and returns the result
 export async function contentScriptAction(action: Action, context: Record<string, unknown>) {
   // get the tab input variable if exists in context
