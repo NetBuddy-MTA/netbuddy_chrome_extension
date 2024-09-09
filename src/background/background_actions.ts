@@ -674,6 +674,7 @@ export function numberLessThanAction(action: Action, context: Record<string, unk
   return {actionLogs, actionOutputs};
 }
 
+// concatenate strings
 export function stringConcatenateAction(action: Action, context: Record<string, unknown>) {
   // initialize the action logs and outputs
   const {actionLogs, actionOutputs} = CreateEmptyResult();
@@ -698,6 +699,49 @@ export function stringConcatenateAction(action: Action, context: Record<string, 
   
   // get the result output
   const resultOutput = action.outputs.find(value => value.originalName === "Result");
+  if (!resultOutput) {
+    actionLogs.push({key: "Warning", value: "Result output is undefined!"});
+    return {actionLogs, actionOutputs};
+  }
+  
+  context[resultOutput.name] = result;
+  actionOutputs[resultOutput.name] = JSON.stringify(result);
+  
+  return {actionLogs, actionOutputs};
+}
+
+// replace string
+export async function stringReplaceAction(action: Action, context: Record<string, unknown>) {
+  // initialize the action logs and outputs
+  const {actionLogs, actionOutputs} = CreateEmptyResult();
+  
+  // get the input variables
+  const mainInput = action.inputs.find(value => value.originalName === "Main String");
+  const substringInput = action.inputs.find(value => value.originalName === "Substring");
+  const replacementInput = action.inputs.find(value => value.originalName === "Replacement String");
+
+  if (!mainInput) {
+    actionLogs.push({key: "Error", value: "Main string input is undefined!"});
+    return {actionLogs, actionOutputs};
+  }
+  if (!substringInput) {
+    actionLogs.push({key: "Error", value: "Substring input is undefined!"});
+    return {actionLogs, actionOutputs};
+  }
+  if (!replacementInput) {
+    actionLogs.push({key: "Error", value: "Replacement string input is undefined!"});
+    return {actionLogs, actionOutputs};
+  }
+  
+  // get the values
+  const mainString = context[mainInput.name] as string;
+  const substring = context[substringInput.name] as string;
+  const replacementString = context[replacementInput.name] as string;
+  const result = mainString.replace(substring, replacementString);
+  
+  // get the output variable
+  const resultOutput = action.outputs.find(value => value.originalName === "Result");
+  
   if (!resultOutput) {
     actionLogs.push({key: "Warning", value: "Result output is undefined!"});
     return {actionLogs, actionOutputs};
